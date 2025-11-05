@@ -61,3 +61,4 @@ linux/flutter/generated_plugins.cmake
 .dart_tool/package_config.json
 windows/flutter/generated_plugin_registrant.h
 windows/flutter/generated_plugin_registrant.cc
+.env
