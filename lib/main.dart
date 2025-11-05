@@ -9,8 +9,14 @@ class PDFHandler extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
-    return Container(
-
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.blue,
+          title: const Text(style: TextStyle(color: Color.fromARGB(255, 255, 255, 255),fontFamily: 'Arial'),'PDF Handler 3000'),
+          centerTitle: true
+          ),
+      )
     );
   }
 }
