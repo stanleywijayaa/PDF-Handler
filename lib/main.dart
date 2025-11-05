@@ -1,5 +1,7 @@
+import 'package:pdf_handler/pages/search_template.dart';
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
+
 void main() {
   runApp(const PDFHandler());
 }
@@ -8,7 +10,7 @@ class PDFHandler extends StatelessWidget {
   const PDFHandler({super.key});
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'PDF Template App',
