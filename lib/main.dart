@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'pages/login_page.dart';
 void main() {
   runApp(const PDFHandler());
 }
@@ -10,13 +10,13 @@ class PDFHandler extends StatelessWidget {
   @override
   Widget build(BuildContext context){
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.blue,
-          title: const Text(style: TextStyle(color: Color.fromARGB(255, 255, 255, 255),fontFamily: 'Arial'),'PDF Handler 3000'),
-          centerTitle: true
-          ),
-      )
+      debugShowCheckedModeBanner: false,
+      title: 'PDF Template App',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        useMaterial3: true,
+      ),
+      home: const LoginPage(),
     );
   }
 }
