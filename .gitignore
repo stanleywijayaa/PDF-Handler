@@ -46,3 +46,17 @@ app.*.map.json
 android/local.properties
 .dart_tool/package_config.json
 .dart_tool/package_config_subset
+
+# Flutter / Dart generated files
+/local.properties
+web_plugin_registrant.dart
+generated_plugin_registrant.*
+**/generated_plugins.cmake
+**/package_config_subset
+**/package_config.json
+.dart_tool/dartpad/web_plugin_registrant.dart
+linux/flutter/generated_plugins.cmake
+.dart_tool/package_config_subset
+.dart_tool/package_config.json
+windows/flutter/generated_plugin_registrant.h
+windows/flutter/generated_plugin_registrant.cc
