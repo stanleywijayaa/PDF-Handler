@@ -51,6 +51,7 @@ android/local.properties
 /local.properties
 web_plugin_registrant.dart
 generated_plugin_registrant.*
+GeneratedPluginRegistrant.*
 **/generated_plugins.cmake
 **/package_config_subset
 **/package_config.json
