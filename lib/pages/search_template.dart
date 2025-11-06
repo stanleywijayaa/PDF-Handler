@@ -25,95 +25,79 @@ class _SearchTemplateState extends State<SearchTemplate> {
       backgroundColor: Color.fromARGB(255, 225, 225, 225),
       body: WebSmoothScroll(
         controller: _scrollController,
-        child: CustomScrollView(
+        scrollAnimationLength: 400,
+        scrollSpeed: 2,
+        curve: Curves.linear,
+        child: SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),
           controller: _scrollController,
-          slivers: [
-            SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Select Template',
-                        style: GoogleFonts.nunito(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w600,
-                          color: const Color.fromARGB(255, 46, 46, 46),
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      TextFormField(
-                        style: GoogleFonts.nunito(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: const Color.fromARGB(255, 0, 0, 0),
-                        ),
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.all(Radius.circular(24)),
-                          ),
-                          filled: true,
-                          fillColor: Color.fromARGB(255, 202, 202, 202),
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 15,
-                            horizontal: 24,
-                          ),
-                          hintText: 'Search Template...',
-                          hintStyle: GoogleFonts.nunito(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: const Color.fromARGB(255, 0, 0, 0),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 24),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          const double itemWidth = 300;
-                          int crossAxisCount =
-                              (constraints.maxWidth / itemWidth).floor();
-                          crossAxisCount =
-                              crossAxisCount > 0 ? crossAxisCount : 1;
-                          return GridView.count(
-                            crossAxisCount: crossAxisCount,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: List.generate(10, (index) {
-                              return Card(
-                                elevation: 3,
-                                child: Center(child: Text('Card ${index + 1}')),
-                              );
-                            }),
-                          );
-                        },
-                      ),
-                    ],
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    'Select Template',
+                    style: GoogleFonts.nunito(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
+                      color: const Color.fromARGB(255, 46, 46, 46),
+                    ),
                   ),
-                ),
+                  SizedBox(height: 12),
+                  TextFormField(
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                    ),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(24)),
+                      ),
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 202, 202, 202),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 24,
+                      ),
+                      hintText: 'Search Template...',
+                      hintStyle: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      const double itemWidth = 300;
+                      int crossAxisCount =
+                          (constraints.maxWidth / itemWidth).floor();
+                      crossAxisCount = crossAxisCount > 0 ? crossAxisCount : 1;
+                      return GridView.count(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: List.generate(10, (index) {
+                          return Card(
+                            elevation: 3,
+                            child: Center(child: Text('Card ${index + 1}')),
+                          );
+                        }),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverGrid(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => Card(),
-                  childCount: 10,
-                ),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
