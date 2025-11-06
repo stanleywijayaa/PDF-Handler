@@ -37,6 +37,7 @@ dependencies:
   flutter_dotenv: ^6.0.0
   google_fonts: ^6.3.2
   web_smooth_scroll: ^2.0.0
+  http: ^1.5.0
 
 dev_dependencies:
   flutter_test:
