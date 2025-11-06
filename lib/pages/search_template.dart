@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SearchTemplate extends StatefulWidget {
   const SearchTemplate({super.key});
@@ -24,11 +25,11 @@ class _SearchTemplateState extends State<SearchTemplate> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    'Search Template',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w500,
+                    'Select Template',
+                    style: GoogleFonts.poppins(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w400,
+                      color: const Color.fromARGB(255, 46, 46, 46),
                     ),
                   ),
                   SizedBox(height: 12),
@@ -72,7 +73,7 @@ class _SearchTemplateState extends State<SearchTemplate> {
                         shrinkWrap:
                             true, // 👈 makes grid take only as much space as needed
                         physics:
-                            NeverScrollableScrollPhysics(), // 👈 prevent nested scroll conflict
+                            ClampingScrollPhysics(), // 👈 prevent nested scroll conflict
                         children: List.generate(10, (index) {
                           return Card(
                             elevation: 3,
