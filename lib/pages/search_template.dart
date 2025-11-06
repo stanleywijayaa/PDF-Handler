@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:web_smooth_scroll/web_smooth_scroll.dart';
 
 class SearchTemplate extends StatefulWidget {
   const SearchTemplate({super.key});
@@ -10,70 +11,82 @@ class SearchTemplate extends StatefulWidget {
 class _SearchTemplateState extends State<SearchTemplate> {
   _SearchTemplateState();
 
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    // initialize scroll controllers
+    _scrollController = ScrollController();
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 225, 225, 225),
       body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: SingleChildScrollView(
+        child: WebSmoothScroll(
+          controller: _scrollController,
+          scrollSpeed: 3,
+          scrollAnimationLength: 500,
+          curve: Curves.decelerate,
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            controller: _scrollController,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
                     'Select Template',
-                    style: GoogleFonts.poppins(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w400,
+                    style: GoogleFonts.nunito(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
                       color: const Color.fromARGB(255, 46, 46, 46),
                     ),
                   ),
                   SizedBox(height: 12),
                   TextFormField(
-                    decoration: const InputDecoration(
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                    ),
+                    decoration: InputDecoration(
                       border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Color.fromARGB(255, 230, 230, 230),
-                        ),
+                        borderSide: BorderSide.none,
                         borderRadius: BorderRadius.all(Radius.circular(24)),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Color.fromARGB(255, 125, 125, 125),
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(24)),
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 202, 202, 202),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 24,
                       ),
-                      fillColor: Color.fromARGB(255, 200, 200, 200),
-                      label: Text(
-                        'Search Template...',
-                        style: TextStyle(color: Colors.black),
+                      hintText: 'Search Template...',
+                      hintStyle: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: const Color.fromARGB(255, 0, 0, 0),
                       ),
                     ),
                   ),
                   SizedBox(height: 24),
                   LayoutBuilder(
                     builder: (context, constraints) {
+                      const double itemWidth = 300;
                       int crossAxisCount =
-                          constraints.maxWidth > 1200
-                              ? 4
-                              : constraints.maxWidth > 800
-                              ? 3
-                              : constraints.maxWidth > 600
-                              ? 2
-                              : 1;
-
+                          (constraints.maxWidth / itemWidth).floor();
+                      crossAxisCount = crossAxisCount > 0 ? crossAxisCount : 1;
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        shrinkWrap:
-                            true, // 👈 makes grid take only as much space as needed
-                        physics:
-                            ClampingScrollPhysics(), // 👈 prevent nested scroll conflict
+                        shrinkWrap: true,
+                        physics: ClampingScrollPhysics(),
                         children: List.generate(10, (index) {
                           return Card(
                             elevation: 3,
