@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 // ignore: unused_import
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'main_page.dart';
 
 class LoginPage extends StatefulWidget{
@@ -13,13 +15,52 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void login() {
-    // For now, just navigate (no real login yet)
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainPage()),
+  void login() async{
+    final username = usernameController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please enter both username and password")),
     );
+    return;
   }
+    try {
+      final response = await http.post(
+        Uri.parse('${dotenv.env['NODE_URL']}/login'),//dunno the route yet for now /login
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': username,
+          'password': password,
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        //Success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Login successful!")),
+        );
+      
+        // For now, just navigate (no real login yet)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainPage(uid: data['uid']),
+          ),
+        );
+      }else {
+          final error = jsonDecode(response.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error['message'] ?? "Invalid login")),
+          );
+        }
+      }catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      }
+    }
   
   @override
   Widget build(BuildContext context) {
