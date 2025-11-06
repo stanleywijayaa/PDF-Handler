@@ -125,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
         Uri.parse('${dotenv.env['NODE_URL']}/login'),//dunno the route yet for now /login
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'username': username,
+          'account': username,
           'password': password,
         }),
       );
