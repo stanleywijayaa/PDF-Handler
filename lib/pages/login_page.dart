@@ -30,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
         Uri.parse('${dotenv.env['NODE_URL']}/login'),//dunno the route yet for now /login
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': username,
+          'username': username,
           'password': password,
         }),
       );
@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: SingleChildScrollView(
           child: Container(
-            width: 350, // 👈 limits width
+            width: 350,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
