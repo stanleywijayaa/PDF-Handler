@@ -122,13 +122,13 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     //loading 
-    // showDialog(
-    //   context: context,
-    //   barrierDismissible: false,
-    //   builder: (context) => const Center(
-    //     child: CircularProgressIndicator(),
-    //   ),
-    // );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
 
     try {
       final response = await http.post(
@@ -140,8 +140,8 @@ class _LoginPageState extends State<LoginPage> {
         }),
       );
       
-      // if (!mounted) return;
-      // Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context);
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
