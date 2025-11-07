@@ -6,7 +6,7 @@ final nodeURL = 'http://127.0.0.1:3000';
 final nocoURL = 'https://connect.appnicorn.com';
 
 class UserLogic {
-  static Future<String> getNocoApp(int uid) async {
+  static Future<String?> getNocoApp(int uid) async {
     final response = await http.get(
       Uri.parse('$nodeURL/user/noco_app?uid=$uid'),
     );
@@ -15,6 +15,6 @@ class UserLogic {
     }
 
     final user = jsonDecode(response.body);
-    return user['data']['nocoApp'];
+    return user['data'];
   }
 }

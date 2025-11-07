@@ -16,7 +16,7 @@ class SearchTemplate extends StatefulWidget {
 class _SearchTemplateState extends State<SearchTemplate> {
   late ScrollController _scrollController;
   Template? selectedTemplate;
-  late Future<List<Template>> _futureTemplates;
+  late Future<List<Template>> _futureTemplates = Future.value([]);
 
   @override
   void initState() {
@@ -29,7 +29,11 @@ class _SearchTemplateState extends State<SearchTemplate> {
   Future<void> _loadData() async {
     final nocoApp = await UserLogic.getNocoApp(widget.uid);
     setState(() {
-      _futureTemplates = TemplateLogic.fetchTemplate(nocoApp);
+      if (nocoApp == null) {
+        _futureTemplates = Future.value([]);
+      } else {
+        _futureTemplates = TemplateLogic.fetchTemplate(nocoApp);
+      }
     });
   }
 
