@@ -115,20 +115,33 @@ class _LoginPageState extends State<LoginPage> {
     final password = passwordController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Please enter both username and password")),
-    );
-    return;
-  }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter both username and password")),
+      );
+      return;
+    }
+
+    //loading 
+    // showDialog(
+    //   context: context,
+    //   barrierDismissible: false,
+    //   builder: (context) => const Center(
+    //     child: CircularProgressIndicator(),
+    //   ),
+    // );
+
     try {
       final response = await http.post(
-        Uri.parse('${dotenv.env['NODE_URL']}/login'),//dunno the route yet for now /login
+        Uri.parse('${dotenv.env['NODE_URL']}/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'account': username,
           'password': password,
         }),
       );
+      
+      // if (!mounted) return;
+      // Navigator.pop(context);
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -137,11 +150,11 @@ class _LoginPageState extends State<LoginPage> {
           const SnackBar(content: Text("Login successful!")),
         );
       
-        // For now, just navigate (no real login yet)
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MainPage(uid: data['uid']),
+            builder: (context) => MainPage(nickname: data['nickname'], uid: data['id']),
           ),
         );
       }else {
