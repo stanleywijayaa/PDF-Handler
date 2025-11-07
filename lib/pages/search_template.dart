@@ -3,10 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf_handler/model/template.dart';
 import 'package:pdf_handler/pages/search_customer.dart';
 import 'package:pdf_handler/services/template_logic.dart';
+import 'package:pdf_handler/services/user_logic.dart';
 import 'package:web_smooth_scroll/web_smooth_scroll.dart';
 
 class SearchTemplate extends StatefulWidget {
-  const SearchTemplate({super.key});
+  final int uid;
+  const SearchTemplate({super.key, required this.uid});
   @override
   State<SearchTemplate> createState() => _SearchTemplateState();
 }
@@ -21,7 +23,14 @@ class _SearchTemplateState extends State<SearchTemplate> {
     // initialize scroll controllers
     super.initState();
     _scrollController = ScrollController();
-    _futureTemplates = TemplateLogic.fetchTemplate("abccc");
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final nocoApp = await UserLogic.getNocoApp(widget.uid);
+    setState(() {
+      _futureTemplates = TemplateLogic.fetchTemplate(nocoApp);
+    });
   }
 
   @override
