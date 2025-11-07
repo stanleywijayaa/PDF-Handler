@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:pdf_handler/model/template.dart';
 
 class SearchCustomer extends StatefulWidget {
-  const SearchCustomer({super.key});
+  final Template? template;
+  const SearchCustomer({super.key, this.template});
   @override
   State<SearchCustomer> createState() => _SearchCustomerState();
 }
