@@ -20,7 +20,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   //For search field later
   final TextEditingController _searchController = TextEditingController();
   double leftFraction = 0.6;
-  final ApiService api = ApiService();
+  final DataLogic api = DataLogic();
 
   List <Map<String, dynamic>> customers = [];
   bool isLoading = false;
