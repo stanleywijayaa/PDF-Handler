@@ -16,111 +16,150 @@ class _CreateTemplateState extends State<CreateTemplate> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey[700],
         title: const Text(
-          'PDF Handler 3000',
-          style: TextStyle(color: Colors.white),
+          "Title",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: Color.fromARGB(255, 1, 164, 219),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
 
       body: Row(
         children: [
+          // ==== LEFT PANEL ====
+          Container(
+            width: 200,
+            color: Colors.grey[100],
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: const Text("Import"),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: const Text("Resize"),
+                ),
+                const Divider(thickness: 2),
+                const Text(
+                  "Components",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _componentButton("Text Box"),
+                _componentButton("Check Box"),
+                _componentButton("Radio Button"),
+                _componentButton("Signature"),
+              ],
+            ),
+          ),
+
+          // ==== MIDDLE (PDF PREVIEW AREA) ====
           Expanded(
-            child: Align(
-              alignment: AlignmentGeometry.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1173FF),
-                          padding: EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(4),
-                          ),
-                        ),
-                        child: Text(
-                          'Import',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1173FF),
-                          padding: EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(4),
-                          ),
-                        ),
-                        child: Text(
-                          'Resize',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
+            child: Center(
+              child: Container(
+                width: 600,
+                height: 600,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black),
+                  color: Colors.white,
+                ),
+                child: const Center(
+                  child: Text("PDF Preview Here"),
                 ),
               ),
             ),
           ),
-          Expanded(child: Center(child: Text('b'))),
-          Expanded(
-            child: Align(
-              alignment: AlignmentGeometry.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 16, 0),
-                child: Column(
+
+          // ==== RIGHT PANEL ====
+          Container(
+            width: 200,
+            color: Colors.grey[100],
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                const Text(
+                  "Data",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _dataButton("Table 1"),
+                _dataButton("Table 2"),
+                _dataButton("Table 3"),
+                _dataButton("Table 4"),
+                _dataButton("Table 5"),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Text('Nocobase Table'),
-                    SizedBox(
-                      height: 500,
-                      child: GridView.count(
-                        crossAxisCount: 1,
-                        crossAxisSpacing: 0,
-                        mainAxisSpacing: 8,
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.all(16),
-                        children: List.generate(10, (index) {
-                          return Card(
-                            color: Colors.blueAccent,
-                            child: Center(
-                              child: Text(
-                                'Card ${index + 1}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          );
-                        }),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[700],
                       ),
+                      child: const Text("Fill Data"),
                     ),
-                    Padding(
-                      padding: EdgeInsetsGeometry.all(16),
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        child: Text('Submit'),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[700],
                       ),
+                      child: const Text("Save"),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 10),
+              ],
             ),
           ),
         ],
+      ),
+
+      // ==== BOTTOM BAR (OPTIONAL PAGE INFO) ====
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        color: Colors.white,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("1200x800", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text("Page: 1/3", style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _componentButton(String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[600],
+          minimumSize: const Size(150, 40),
+        ),
+        child: Text(label, style: const TextStyle(color: Colors.white)),
+      ),
+    );
+  }
+
+  Widget _dataButton(String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[600],
+          minimumSize: const Size(150, 40),
+        ),
+        child: Text(label, style: const TextStyle(color: Colors.white)),
       ),
     );
   }
