@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pdf_handler/model/template.dart';
+import 'package:pdf_handler/services/custdata_logic.dart';
 
 class SearchCustomer extends StatefulWidget {
   final Template? template;
-  const SearchCustomer({super.key, this.template});
+  final int uid;
+
+  const SearchCustomer({
+    super.key, 
+    required this.template,
+    required this.uid,
+  });
+
   @override
   State<SearchCustomer> createState() => _SearchCustomerState();
 }
@@ -11,6 +19,42 @@ class SearchCustomer extends StatefulWidget {
 class _SearchCustomerState extends State<SearchCustomer> {
   //For search field later
   final TextEditingController _searchController = TextEditingController();
+  final ApiService api = ApiService();
+
+  List <Map<String, dynamic>> customers = [];
+  bool isLoading = false;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomers();
+  }
+
+  Future<void> _loadCustomers() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final data = await api.getCustomers(
+        templateId: widget.template?.id ?? 0,
+        customerId: widget.uid,
+      );
+      setState(() {
+        customers = data;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,17 +101,13 @@ class _SearchCustomerState extends State<SearchCustomer> {
                   const SizedBox(height: 20),
                   //Placeholder for customer details
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        "Customer Info will appear here...",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
+                    child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : errorMessage != null
+                        ? Center(child: Text("Error: $errorMessage"))
+                        : customers.isEmpty
+                          ? const Center(child: Text("No customers found"))
+                          : _buildCustomerList(),
                   ),
                   const SizedBox(height: 20),
                   //Export button
@@ -90,6 +130,30 @@ class _SearchCustomerState extends State<SearchCustomer> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCustomerList() {
+    return ListView.builder(
+      itemCount: customers.length,
+      itemBuilder: (context, index) {
+        final customer = customers[index];
+        final entries = customer.entries.map((e) => "${e.key}: ${e.value}").toList();
+
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          elevation: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: entries
+                .map((line) => Text(line, style: const TextStyle(fontSize: 14)))
+                .toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 }
