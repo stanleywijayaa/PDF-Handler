@@ -11,7 +11,7 @@ class MainPage extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
-    return Scaffold(g
+    return Scaffold(
       appBar: AppBar(title: Text('Main Page Logged in as user: $nickname with id: $uid')),
       body: Column(
         children: [
