@@ -16,61 +16,109 @@ class _CreateTemplateState extends State<CreateTemplate> {
   Widget build(BuildContext build) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PDF Handler 3000', style: TextStyle(color: Colors.white),), 
-        centerTitle: true, 
+        title: const Text(
+          'PDF Handler 3000',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
         backgroundColor: Color.fromARGB(255, 1, 164, 219),
       ),
       body: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1173FF),
-                      padding: EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(4),
+          Expanded(
+            child: Align(
+              alignment: AlignmentGeometry.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1173FF),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadiusGeometry.circular(4),
+                          ),
+                        ),
+                        child: Text(
+                          'Import',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      'Import',
-                      style: TextStyle(color: Colors.white),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1173FF),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadiusGeometry.circular(4),
+                          ),
+                        ),
+                        child: Text(
+                          'Resize',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1173FF),
-                      padding: EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(4),
-                      ),
-                    ),
-                    child: Text(
-                      'Resize',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-          Center(child: Text('b')),
-          Center(child: Text('c')),
+          Expanded(child: Center(child: Text('b'))),
+          Expanded(
+            child: Align(
+              alignment: AlignmentGeometry.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 16, 0),
+                child: Column(
+                  children: [
+                    Text('Nocobase Table'),
+                    SizedBox(
+                      height: 500,
+                      child: GridView.count(
+                        crossAxisCount: 1,
+                        crossAxisSpacing: 0,
+                        mainAxisSpacing: 8,
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.all(16),
+                        children: List.generate(10, (index) {
+                          return Card(
+                            color: Colors.blueAccent,
+                            child: Center(
+                              child: Text(
+                                'Card ${index + 1}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsetsGeometry.all(16),
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        child: Text('Submit'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
