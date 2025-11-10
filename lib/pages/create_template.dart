@@ -15,6 +15,11 @@ class _CreateTemplateState extends State<CreateTemplate> {
   @override
   Widget build(BuildContext build) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('PDF Handler 3000', style: TextStyle(color: Colors.white),), 
+        centerTitle: true, 
+        backgroundColor: Color.fromARGB(255, 1, 164, 219),
+      ),
       body: Row(
         children: [
           Padding(
