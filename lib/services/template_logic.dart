@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/model/template.dart';
 
-final nodeURL = 'http://127.0.0.1:3000';
+final nodeURL = 'http://10.237.70.191:3000';
 final nocoURL = 'https://connect.appnicorn.com';
 
 class TemplateLogic {
@@ -13,9 +13,8 @@ class TemplateLogic {
       body: jsonEncode({'nocoApp': nocoApp}),
     );
     if (detailsResponse.statusCode != 200) {
-      throw Exception('Failed to load products');
+      throw Exception('Failed to load templates');
     }
-
     final data = json.decode(detailsResponse.body);
     List details = data['data'];
 

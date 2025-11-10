@@ -26,6 +26,12 @@ class _SearchTemplateState extends State<SearchTemplate> {
     _loadData();
   }
 
+  @override
+  void reassemble() {
+    super.reassemble();
+    _loadData();
+  }
+
   Future<void> _loadData() async {
     final nocoApp = await UserLogic.getNocoApp(widget.uid);
     setState(() {
@@ -91,102 +97,107 @@ class _SearchTemplateState extends State<SearchTemplate> {
                     ),
                   ),
                   SizedBox(height: 24),
-                  FutureBuilder<List<Template>>(
-                    future: _futureTemplates,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Text('No templates found');
-                      }
+                  RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: FutureBuilder<List<Template>>(
+                      future: _futureTemplates,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return const Text('No templates found');
+                        }
 
-                      final templates = snapshot.data!;
+                        final templates = snapshot.data!;
 
-                      return LayoutBuilder(
-                        builder: (context, constraints) {
-                          const double itemWidth = 200;
-                          int crossAxisCount =
-                              (constraints.maxWidth / itemWidth).floor();
-                          crossAxisCount =
-                              crossAxisCount > 0 ? crossAxisCount : 1;
+                        return LayoutBuilder(
+                          builder: (context, constraints) {
+                            const double itemWidth = 200;
+                            int crossAxisCount =
+                                (constraints.maxWidth / itemWidth).floor();
+                            crossAxisCount =
+                                crossAxisCount > 0 ? crossAxisCount : 1;
 
-                          return GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 16,
-                                  childAspectRatio: 1,
-                                ),
-                            itemCount: templates.length,
-                            itemBuilder: (context, index) {
-                              final template = templates[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedTemplate = template;
-                                  });
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => SearchCustomer(
-                                            template: selectedTemplate,
-                                          ),
-                                    ),
-                                  );
-                                },
-                                child: Card(
-                                  elevation: 3,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: crossAxisCount,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
+                                    childAspectRatio: 1,
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(
-                                          Icons.picture_as_pdf,
-                                          size: 48,
-                                          color: Color.fromARGB(
-                                            255,
-                                            46,
-                                            46,
-                                            46,
+                              itemCount: templates.length,
+                              itemBuilder: (context, index) {
+                                final template = templates[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedTemplate = template;
+                                    });
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => SearchCustomer(
+                                              template: selectedTemplate,
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                  child: Card(
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.picture_as_pdf,
+                                            size: 48,
+                                            color: Color.fromARGB(
+                                              255,
+                                              46,
+                                              46,
+                                              46,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          template.title ?? 'Untitled',
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.nunito(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            template.title ?? 'Untitled',
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.nunito(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
-                                        ),
-                                        Text(
-                                          '${template.fileSize ?? 0} KB',
-                                          style: GoogleFonts.nunito(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
+                                          Text(
+                                            '${template.fileSize ?? 0} KB',
+                                            style: GoogleFonts.nunito(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
