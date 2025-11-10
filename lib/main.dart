@@ -8,7 +8,7 @@ import 'package:pdf_handler/pages/main_page.dart';//delete later
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 
-Future <void> main() async{
+Future<void> main() async {
   //Ensures Flutter’s bindings are initialized before running async code
   WidgetsFlutterBinding.ensureInitialized();
   //Load the .env file
@@ -26,11 +26,32 @@ class PDFHandler extends StatelessWidget {
       title: 'PDF Template App',
       theme: ThemeData(
         textTheme: GoogleFonts.poppinsTextTheme().copyWith(
-          bodyLarge: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-          bodyMedium: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-          bodySmall: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+          bodyLarge: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+          bodyMedium: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+          bodySmall: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
         ),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.grey,
+            backgroundColor: const Color.fromARGB(255, 4, 94, 167),
+            textStyle: TextStyle(color: Colors.white),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+        ),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 255, 255, 255),
+        ),
         useMaterial3: true,
       ),
       home: const MainPage(nickname: 'bahligger', uid: 2),// ⚠️will change this to login page later⚠️.
