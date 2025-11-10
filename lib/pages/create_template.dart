@@ -51,7 +51,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                   "Components",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 10),//⚠️add _onpressed function under this later⚠️.
                 _componentButton("Text Box"),
                 _componentButton("Check Box"),
                 _componentButton("Radio Button"),
@@ -88,7 +88,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                   "Data",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 10), //⚠️create function to loop through nocobase table and call it here.⚠️
                 _dataButton("Table 1"),
                 _dataButton("Table 2"),
                 _dataButton("Table 3"),
