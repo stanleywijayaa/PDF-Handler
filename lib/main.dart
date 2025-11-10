@@ -1,4 +1,5 @@
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pdf_handler/model/template.dart';
 import 'package:pdf_handler/pages/search_customer.dart';
 import 'package:pdf_handler/pages/search_template.dart';
 import 'package:pdf_handler/pages/create_template.dart';
