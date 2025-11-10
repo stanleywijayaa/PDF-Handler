@@ -139,8 +139,8 @@ class _SearchCustomerState extends State<SearchCustomer> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       //Title
-                      const Text(
-                        "Search Customer",
+                      Text(
+                        "Search ${widget.template?.tableName ?? "Data"}",
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
                       ),
                       const SizedBox(height: 12),
@@ -148,7 +148,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
                       TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          hintText: "Enter customer name / id",
+                          hintText: "Enter ${widget.template?.tableName ?? "Data"} name / id",
                           border: OutlineInputBorder(),
                           suffixIcon: Icon(Icons.search),
                         ),
@@ -191,34 +191,48 @@ class _SearchCustomerState extends State<SearchCustomer> {
   }
 
   Widget _buildCustomerList() {
-    if (customers.isEmpty) return const Center(child: Text('No customers found'));
-    final allKeys = <String>{};
-    for (var customer in customers) {
-      allKeys.addAll(customer.keys);
+    if (customers.isEmpty) {
+      return const Center(child: Text('No customers found'));
     }
-    final headers = allKeys.toList();
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: headers
-          .map((key) => DataColumn(
-            label: Text(
-              key,
+    return ListView.builder(
+      itemCount: customers.length,
+      itemBuilder: (context, index) {
+        final customer = customers[index];
+        final number = index + 1;
+        final id = customer['id'] ?? 'N/A';
+        final nameKey = customer.keys.firstWhere(
+          (key) => key.toLowerCase().contains('name'),
+          orElse: () => '',
+        );
+        final nameValue = nameKey.isNotEmpty ? customer[nameKey] : 'N/A';
+        final createdAt = customer['createdAt'] ?? 'N/A';
+        final updatedAt = customer['updatedAt'] ?? 'N/A';
+
+        return Card(
+          elevation: 2,
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: ListTile(
+            leading: CircleAvatar(
+              child: Text(number.toString()),
+            ),
+            title: Text(
+              nameValue.toString() + ("($id)"),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-          ))
-        .toList(),
-        rows: customers.map((customer){
-          return DataRow(
-            cells: headers.map((key){
-              return DataCell(
-                Text(customer[key]?.toString() ?? ""),
-              );
-            }).toList()
-          );
-        }).toList(),
-      ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Created at: $createdAt'),
+                Text('Updated at: $updatedAt'),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
