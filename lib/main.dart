@@ -1,11 +1,11 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf_handler/model/template.dart';
+import 'package:pdf_handler/pages/login_page.dart';
 import 'package:pdf_handler/pages/search_customer.dart';
 import 'package:pdf_handler/pages/search_template.dart';
 import 'package:pdf_handler/pages/create_template.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
-import 'pages/login_page.dart';
 
 Future <void> main() async{
   //Ensures Flutter’s bindings are initialized before running async code

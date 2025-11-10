@@ -13,7 +13,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   }
 
   @override
-  Widget build(BuildContext build) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -23,6 +23,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
         centerTitle: true,
         backgroundColor: Color.fromARGB(255, 1, 164, 219),
       ),
+
       body: Row(
         children: [
           Expanded(
