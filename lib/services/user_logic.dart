@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-final nodeURL = 'http://127.0.0.1:3000';
+final nodeURL = 'http://localhost:3000';
 final nocoURL = 'https://connect.appnicorn.com';
 
 class UserLogic {

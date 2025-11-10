@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/model/template.dart';
 
-final nodeURL = 'http://10.237.70.191:3000';
+final nodeURL = 'http://localhost:3000';
 final nocoURL = 'https://connect.appnicorn.com';
 
 class TemplateLogic {
