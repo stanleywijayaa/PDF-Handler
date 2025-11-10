@@ -146,6 +146,7 @@ class _SearchTemplateState extends State<SearchTemplate> {
                                         builder:
                                             (context) => SearchCustomer(
                                               template: selectedTemplate,
+                                              uid: widget.uid,
                                             ),
                                       ),
                                     );
