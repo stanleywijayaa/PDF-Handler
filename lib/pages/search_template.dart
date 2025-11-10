@@ -173,7 +173,7 @@ class _SearchTemplateState extends State<SearchTemplate> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                            template.title ?? 'Untitled',
+                                            template.title,
                                             textAlign: TextAlign.center,
                                             style: GoogleFonts.nunito(
                                               fontSize: 16,
@@ -181,7 +181,7 @@ class _SearchTemplateState extends State<SearchTemplate> {
                                             ),
                                           ),
                                           Text(
-                                            '${template.fileSize ?? 0} KB',
+                                            '${template.fileSize} KB',
                                             style: GoogleFonts.nunito(
                                               fontSize: 12,
                                               color: Colors.grey[600],
