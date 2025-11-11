@@ -23,6 +23,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   final DataLogic api = DataLogic();
 
   List <Map<String, dynamic>> customers = [];
+  List <Map<String, dynamic>> filteredCustomers =[];
   bool isLoading = false;
   String? errorMessage;
 
@@ -45,6 +46,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
       );
       setState(() {
         customers = data;
+        filteredCustomers = data;
       });
     } catch (e) {
       setState(() {
@@ -55,6 +57,23 @@ class _SearchCustomerState extends State<SearchCustomer> {
         isLoading = false;
       });
     }
+  }
+
+  void _searchCustomers(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredCustomers = customers;
+      });
+      return;
+    }
+    final lowerQuery = query.toLowerCase();
+
+    setState(() {
+      filteredCustomers = customers.where((customer) {
+        final combined = customer.values.join(' ').toLowerCase();
+        return combined.contains(lowerQuery);
+      }).toList();
+    });
   }
 
   @override
@@ -141,17 +160,19 @@ class _SearchCustomerState extends State<SearchCustomer> {
                       //Title
                       Text(
                         "Search ${widget.template?.tableName ?? "Data"}",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)
                       ),
                       const SizedBox(height: 12),
                       //Search Box
                       TextField(
                         controller: _searchController,
+                        style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
                           hintText: "Enter ${widget.template?.tableName ?? "Data"} name / id",
                           border: OutlineInputBorder(),
                           suffixIcon: Icon(Icons.search),
                         ),
+                        onSubmitted: _searchCustomers,
                       ),
                       const SizedBox(height: 20),
                       //Placeholder for customer details
@@ -191,14 +212,14 @@ class _SearchCustomerState extends State<SearchCustomer> {
   }
 
   Widget _buildCustomerList() {
-    if (customers.isEmpty) {
+    if (filteredCustomers.isEmpty) {
       return const Center(child: Text('No customers found'));
     }
 
     return ListView.builder(
-      itemCount: customers.length,
+      itemCount: filteredCustomers.length,
       itemBuilder: (context, index) {
-        final customer = customers[index];
+        final customer = filteredCustomers[index];
         final number = index + 1;
         final id = customer['id'] ?? 'N/A';
         final nameKey = customer.keys.firstWhere(
@@ -220,7 +241,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
               child: Text(number.toString()),
             ),
             title: Text(
-              nameValue.toString() + ("($id)"),
+              nameValue.toString() + ("(ID: $id)"),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
