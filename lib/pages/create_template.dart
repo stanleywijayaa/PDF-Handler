@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/table.dart';
@@ -74,7 +76,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 74, 107, 179),
         automaticallyImplyLeading: false,
-        titleSpacing: 0,
+        titleSpacing: 10,
         title: Stack(
           alignment: Alignment.center,
           children: [
@@ -86,8 +88,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
               ),
             ),
             SizedBox(
-              height: 40,
-              width: 300,
+              width: MediaQuery.of(context).size.width * 0.2,
               child: TextField(
                 focusNode: _focusNode,
                 textAlign: TextAlign.center,
@@ -113,13 +114,13 @@ class _CreateTemplateState extends State<CreateTemplate> {
         children: [
           // ==== LEFT PANEL ====
           Container(
-            width: 200,
+            width: max(MediaQuery.of(context).size.width * 0.18, 200),
             color: const Color.fromARGB(255, 80, 80, 80),
             child: Column(
               children: [
                 Container(
                   height: 100,
-                  width: 200,
+                  width: max(MediaQuery.of(context).size.width * 0.18, 200),
                   color: const Color.fromARGB(255, 199, 199, 199),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -216,7 +217,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
 
           // ==== RIGHT PANEL ====
           Container(
-            width: 250,
+            width: max(MediaQuery.of(context).size.width * 0.18, 200),
             color: const Color(0xFF505050),
             child: Column(
               children: [
@@ -224,20 +225,26 @@ class _CreateTemplateState extends State<CreateTemplate> {
                   padding: EdgeInsets.all(8),
                   width: double.infinity,
                   color: const Color.fromARGB(255, 70, 70, 70),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () {
-                          setState(() {
-                            _selectedData = null;
-                            selectedTable = null;
-                            _futureDataCached = dataLogic.getTables(
-                              uid: widget.uid,
-                            );
-                          });
-                        },
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _selectedData = null;
+                              selectedTable = null;
+                              _futureDataCached = dataLogic.getTables(
+                                uid: widget.uid,
+                              );
+                            });
+                          },
+                        ),
                       ),
                       Center(
                         child: Text(
