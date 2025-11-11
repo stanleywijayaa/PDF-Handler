@@ -33,6 +33,21 @@ class PDFHandler extends StatelessWidget {
             fontWeight: FontWeight.w500,
             color: Colors.white,
           ),
+          titleLarge: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            fontSize: 18,
+            color: Colors.white,
+          ),
+          titleMedium: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: Colors.white,
+          ),
+          titleSmall: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            color: Colors.white,
+          ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -49,7 +64,10 @@ class PDFHandler extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const MainPage(nickname: 'bahligger', uid: 2),// ⚠️will change this to login page later⚠️.
+      home: const MainPage(
+        nickname: 'bahligger',
+        uid: 2,
+      ), // ⚠️will change this to login page later⚠️.
     );
   }
 }
