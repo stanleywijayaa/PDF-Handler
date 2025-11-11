@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/table.dart';
 import 'package:pdf_handler/services/data_logic.dart';
 
@@ -15,7 +16,9 @@ class _CreateTemplateState extends State<CreateTemplate> {
   final DataLogic dataLogic = DataLogic();
   final FocusNode _focusNode = FocusNode();
   TableModel? selectedTable;
+  dynamic _selectedData;
   bool _isFocused = false;
+  Future<List<dynamic>>? _futureDataCached;
 
   @override
   void initState() {
@@ -26,6 +29,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
         _isFocused = _focusNode.hasFocus;
       });
     });
+    _futureDataCached = _futureData();
   }
 
   @override
@@ -36,13 +40,30 @@ class _CreateTemplateState extends State<CreateTemplate> {
   }
 
   Future<List<dynamic>> _futureData() async {
-    if (selectedTable != null) {
-      await selectedTable!.fetchSchema(uid: widget.uid);
-      return selectedTable!.schema;
+    if (_selectedData != null) {
+      await _selectedData!.fetchSchema(uid: widget.uid);
+      return _selectedData!.schema;
     } else {
       final tables = await dataLogic.getTables(uid: widget.uid);
       return tables ?? [];
     }
+  }
+
+  void _selectItem(dynamic item) {
+    setState(() {
+      _selectedData = item;
+
+      if (item is TableModel) {
+        selectedTable = item;
+        // Update the future to fetch the schema of this table
+        _futureDataCached = selectedTable!
+            .fetchSchema(uid: widget.uid)
+            .then((_) => selectedTable!.schema);
+      } else if (item is Schema) {
+        // Optional: do something if a Schema is selected
+        _selectedData = item;
+      }
+    });
   }
 
   @override
@@ -194,7 +215,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
           // ==== RIGHT PANEL ====
           Container(
             width: 250,
-            color: Colors.grey[100],
+            color: const Color(0xFF505050),
             child: Column(
               children: [
                 Container(
@@ -210,12 +231,55 @@ class _CreateTemplateState extends State<CreateTemplate> {
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
                 ), //⚠️create function to loop through nocobase table and call it here.⚠️
+                Expanded(
+                  child: FutureBuilder(
+                    future: _futureDataCached,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No data found'));
+                      }
 
-                const Spacer(),
+                      final items = snapshot.data!;
+                      return ListView.builder(
+                        physics: ClampingScrollPhysics(),
+                        padding: const EdgeInsets.all(8),
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          String titleText = '';
+                          if (item is Schema) {
+                            titleText = item.title;
+                          } else if (item is TableModel) {
+                            titleText = item.title;
+                          } else {
+                            titleText = item.toString();
+                          }
+                          return InkWell(
+                            onTap: () => _selectItem(item),
+                            child: Card(
+                              color:
+                                  _selectedData == item
+                                      ? Colors.blue
+                                      : const Color.fromARGB(
+                                        255,
+                                        255,
+                                        255,
+                                        255,
+                                      ),
+                              margin: EdgeInsets.symmetric(vertical: 6),
+                              child: ListTile(title: Text(titleText)),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
