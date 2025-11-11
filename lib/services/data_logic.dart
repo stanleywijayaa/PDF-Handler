@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/table.dart';
 
 final nocoURL = 'http://localhost:3000';
@@ -26,7 +25,7 @@ class DataLogic {
     }
   }
 
-  Future<List<TableModel>>? getTables({required int uid}) async {
+  Future<List<TableModel>> getTables({required int uid}) async {
     final response = await http.post(
       Uri.parse('$nocoURL/data/tables'),
       headers: {'Content-Type': 'application/json'},
@@ -36,13 +35,13 @@ class DataLogic {
       throw Exception('Failed to get tables');
     }
     final rawTables = jsonDecode(response.body);
-    if (rawTables is! List) {
+    if (rawTables['data'] is! List) {
       throw Exception('Invalid table list received');
     }
     final tablesList =
-        rawTables.map((item) {
-          return TableModel.fromJson(item as Map<String, dynamic>);
-        }).toList();
+        (rawTables['data'] as List)
+            .map((item) => TableModel.fromJson(item as Map<String, dynamic>))
+            .toList();
     return tablesList;
   }
 }
