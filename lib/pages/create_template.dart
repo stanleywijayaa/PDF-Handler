@@ -27,6 +27,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   String tableTitle = 'Data Fields';
   String selectedComponent = "";
   Future<List<dynamic>>? _futureDataCached;
+  String fileName = '';
 
   @override
   void initState() {
@@ -124,23 +125,31 @@ class _CreateTemplateState extends State<CreateTemplate> {
             color: const Color.fromARGB(255, 80, 80, 80),
             child: Column(
               children: [
-                Container(
-                  height: 100,
-                  width: double.infinity,
-                  color: const Color.fromARGB(255, 117, 250, 105),
-                  child: IconButton(onPressed: (){}, icon: Icon(Icons.file_upload_outlined),)
+                Material(
+                  color: Colors.green,
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    splashColor: const Color.fromARGB(255, 77, 184, 77),
+                    onTap: () {},
+                    child: SizedBox(
+                      height: 100,
+                      width: double.infinity,
+                      child: const Icon(
+                        Icons.file_upload_outlined,
+                        size: 40,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
                 Container(
                   color: const Color(0xFF464646),
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 8),
+                  padding: EdgeInsets.symmetric(vertical: 12),
                   child: const Text(
                     textAlign: TextAlign.center,
                     "Components",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
                 const SizedBox(
@@ -159,11 +168,11 @@ class _CreateTemplateState extends State<CreateTemplate> {
             child: Column(
               children: [
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Center(
-                      child: SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(),
+                  child: SingleChildScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Center(
                         child: Container(
                           width: 600,
                           height: 800,
@@ -288,11 +297,24 @@ class _CreateTemplateState extends State<CreateTemplate> {
                               color:
                                   _selectedData == item
                                       ? Colors.blue
-                                      : const Color.fromARGB(255, 240, 240, 240),
+                                      : const Color.fromARGB(
+                                        255,
+                                        240,
+                                        240,
+                                        240,
+                                      ),
                               margin: EdgeInsets.symmetric(vertical: 6),
-                              child: ListTile(title: Text(titleText, 
-                                                style: TextStyle(
-                                                  color: _selectedData == item ? Colors.white : Colors.black))),
+                              child: ListTile(
+                                title: Text(
+                                  titleText,
+                                  style: TextStyle(
+                                    color:
+                                        _selectedData == item
+                                            ? Colors.white
+                                            : Colors.black,
+                                  ),
+                                ),
+                              ),
                             ),
                           );
                         },
@@ -370,79 +392,119 @@ class _CreateTemplateState extends State<CreateTemplate> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
       child: ElevatedButton(
-        onPressed: () {setState(() {
-          selectedComponent = label;
-        });},
+        onPressed: () {
+          setState(() {
+            selectedComponent = label;
+          });
+        },
         style: ElevatedButton.styleFrom(
-          backgroundColor: selectedComponent == label ? Colors.blue : Color.fromARGB(255, 240, 240, 240),
+          backgroundColor:
+              selectedComponent == label
+                  ? Colors.blue
+                  : Color.fromARGB(255, 240, 240, 240),
           minimumSize: const Size(300, 50),
         ),
-        child: Text(label, style: TextStyle(color: selectedComponent == label ? Colors.white : Colors.black)),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selectedComponent == label ? Colors.white : Colors.black,
+          ),
+        ),
       ),
     );
   }
 
   void _showSaveDialog(BuildContext context) {
-    if (_controller.text == '') {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: SizedBox(
-              height: 200,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Save Template",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+    final TextEditingController dialogController = TextEditingController();
+    dialogController.text = _controller.text;
+    final FocusNode dialogFocusNode = FocusNode();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: SizedBox(
+            height: 200,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Save Template",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
-                    SizedBox(
-                      width: 180,
-                      child: TextField(
-                        controller: _controller,
-                        focusNode: _focusNode,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color.fromARGB(255, 0, 0, 0),
+                  ),
+                  SizedBox(
+                    width: 180,
+                    child: TextField(
+                      controller: dialogController,
+                      focusNode: dialogFocusNode,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 0, 0, 0),
+                        fontSize: 18,
+                      ),
+                      cursorColor: const Color.fromARGB(255, 0, 0, 0),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        hintText: _isFocused ? null : widget.hintText,
+                        hintStyle: TextStyle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
                           fontSize: 18,
                         ),
-                        cursorColor: const Color.fromARGB(255, 0, 0, 0),
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black),
-                          ),
-                          hintText: _isFocused ? null : widget.hintText,
-                          hintStyle: TextStyle(
-                            color: const Color.fromARGB(255, 0, 0, 0),
-                            fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 200,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            if (mounted) {
+                              setState(() {
+                                _controller.text = dialogController.text;
+                              });
+                            }
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
-                      ),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (mounted) {
+                              setState(() {
+                                _controller.text = dialogController.text;
+                              });
+                            }
+                          },
+                          child: const Text(
+                            "Save",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text(
-                        "Save",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          );
-        },
-      );
-    } else {}
+          ),
+        );
+      },
+    );
   }
 }
