@@ -6,7 +6,7 @@ class FormModel {
   final String tableName;
   final List<Field> fields = List.empty(growable: true);
 
-  FormModel({this.name, required this.nocoApp, required this.tableName});
+  FormModel({required this.name, required this.nocoApp, required this.tableName});
 
   void addField(Field field) {
     fields.add(field);

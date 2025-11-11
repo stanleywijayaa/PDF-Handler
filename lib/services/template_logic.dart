@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:pdf_handler/model/form.dart';
 import 'package:pdf_handler/model/template.dart';
 
 final nodeURL = 'http://localhost:3000';

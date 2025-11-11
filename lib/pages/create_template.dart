@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/table.dart';
+import 'package:pdf_handler/model/template.dart';
+import 'package:pdf_handler/pages/search_customer.dart';
 import 'package:pdf_handler/services/data_logic.dart';
 
 class CreateTemplate extends StatefulWidget {
@@ -20,6 +22,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   TableModel? selectedTable;
   dynamic _selectedData;
   bool _isFocused = false;
+  bool _saved = false;
   String tableTitle = 'Data Fields';
   Future<List<dynamic>>? _futureDataCached;
 
@@ -90,6 +93,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.2,
               child: TextField(
+                controller: _controller,
                 focusNode: _focusNode,
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white, fontSize: 18),
@@ -314,18 +318,49 @@ class _CreateTemplateState extends State<CreateTemplate> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[700],
+                    if (_saved)
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => SearchCustomer(
+                                    template: Template(
+                                      //⚠️Change to created template⚠️//
+                                      id: 2,
+                                      title: 'ABC',
+                                      tableName: 'product',
+                                      fileSize: 123456,
+                                    ),
+                                    uid: widget.uid,
+                                  ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[700],
+                        ),
+                        child: const Text(
+                          "Fill Data",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    else
+                      ElevatedButton(
+                        onPressed: null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[700],
+                        ),
+                        child: const Text(
+                          "Fill Data",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 190, 190, 190),
+                          ),
+                        ),
                       ),
-                      child: const Text(
-                        "Fill Data",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => _showSaveDialog(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 44, 127, 11),
                       ),
@@ -359,17 +394,67 @@ class _CreateTemplateState extends State<CreateTemplate> {
     );
   }
 
-  Widget _dataButton(String label) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[600],
-          minimumSize: const Size(150, 40),
-        ),
-        child: Text(label, style: const TextStyle(color: Colors.white)),
-      ),
-    );
+  void _showSaveDialog(BuildContext context) {
+    if (_controller.text == '') {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SizedBox(
+              height: 200,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Save Template",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 180,
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          fontSize: 18,
+                        ),
+                        cursorColor: const Color.fromARGB(255, 0, 0, 0),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black),
+                          ),
+                          hintText: _isFocused ? null : widget.hintText,
+                          hintStyle: TextStyle(
+                            color: const Color.fromARGB(255, 0, 0, 0),
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text(
+                        "Save",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    } else {}
   }
 }
