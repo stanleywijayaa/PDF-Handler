@@ -228,23 +228,26 @@ class _CreateTemplateState extends State<CreateTemplate> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _selectedData = null;
-                            selectedTable = null;
-                            tableTitle = 'Data Fields';
-                            _futureDataCached = dataLogic.getTables(
-                              uid: widget.uid,
-                            );
-                          });
-                        },
-                      ),
+                      if (_selectedData != null)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _selectedData = null;
+                              selectedTable = null;
+                              tableTitle = 'Data Fields';
+                              _futureDataCached = dataLogic.getTables(
+                                uid: widget.uid,
+                              );
+                            });
+                          },
+                        )
+                      else
+                        SizedBox(width: 40, height: 40),
                       Expanded(
                         child: Text(
                           tableTitle,
