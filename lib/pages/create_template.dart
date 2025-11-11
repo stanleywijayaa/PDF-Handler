@@ -18,6 +18,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   TableModel? selectedTable;
   dynamic _selectedData;
   bool _isFocused = false;
+  String tableTitle = 'Data Fields';
   Future<List<dynamic>>? _futureDataCached;
 
   @override
@@ -59,6 +60,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
         _futureDataCached = selectedTable!
             .fetchSchema(uid: widget.uid)
             .then((_) => selectedTable!.schema);
+        tableTitle = selectedTable!.title;
       } else if (item is Schema) {
         // Optional: do something if a Schema is selected
         _selectedData = item;
@@ -222,14 +224,32 @@ class _CreateTemplateState extends State<CreateTemplate> {
                   padding: EdgeInsets.all(8),
                   width: double.infinity,
                   color: const Color.fromARGB(255, 70, 70, 70),
-                  child: Center(
-                    child: Text(
-                      "Data Fields",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color.fromARGB(255, 255, 255, 255),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () {
+                          setState(() {
+                            _selectedData = null;
+                            selectedTable = null;
+                            _futureDataCached = dataLogic.getTables(
+                              uid: widget.uid,
+                            );
+                          });
+                        },
                       ),
-                    ),
+                      Center(
+                        child: Text(
+                          tableTitle,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color.fromARGB(255, 255, 255, 255),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                   ),
                 ), //⚠️create function to loop through nocobase table and call it here.⚠️
                 Expanded(
@@ -280,6 +300,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                     },
                   ),
                 ),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
