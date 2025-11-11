@@ -1,10 +1,5 @@
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pdf_handler/model/template.dart';//delete later
-import 'package:pdf_handler/pages/login_page.dart';
-import 'package:pdf_handler/pages/search_customer.dart';//delete later
-import 'package:pdf_handler/pages/search_template.dart';//delete later
-import 'package:pdf_handler/pages/create_template.dart';//delete later
-import 'package:pdf_handler/pages/main_page.dart';//delete later
+import 'package:pdf_handler/pages/main_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 
