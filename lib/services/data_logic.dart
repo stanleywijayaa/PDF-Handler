@@ -30,28 +30,19 @@ class DataLogic {
     final response = await http.post(
       Uri.parse('$nocoURL/data/tables'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({uid: uid}),
+      body: jsonEncode({'uid': uid}),
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to get tables');
     }
-    final tables = jsonDecode(response.body);
-    return tables;
-  }
-
-  Future<List<Schema>>? getSchema({
-    required String tableName,
-    required int uid,
-  }) async {
-    final response = await http.post(
-      Uri.parse('$nocoURL/data/schema'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({uid: uid, tableName: tableName}),
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Failed to get schema');
+    final rawTables = jsonDecode(response.body);
+    if (rawTables is! List) {
+      throw Exception('Invalid table list received');
     }
-    final schema = jsonDecode(response.body);
-    return schema;
+    final tablesList =
+        rawTables.map((item) {
+          return TableModel.fromJson(item as Map<String, dynamic>);
+        }).toList();
+    return tablesList;
   }
 }
