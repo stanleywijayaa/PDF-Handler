@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:pdf_handler/model/table.dart';
+import 'package:pdf_handler/services/data_logic.dart';
 
 class CreateTemplate extends StatefulWidget {
   final String hintText = "Untitled Form";
-  const CreateTemplate({super.key});
+  final int uid;
+  const CreateTemplate({super.key, required this.uid});
   @override
   State<CreateTemplate> createState() => _CreateTemplateState();
 }
 
 class _CreateTemplateState extends State<CreateTemplate> {
   late TextEditingController _controller;
+  final DataLogic dataLogic = DataLogic();
   final FocusNode _focusNode = FocusNode();
+  TableModel? selectedTable;
   bool _isFocused = false;
 
   @override
@@ -28,6 +33,16 @@ class _CreateTemplateState extends State<CreateTemplate> {
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  Future<List<dynamic>> _futureData() async {
+    if (selectedTable != null) {
+      await selectedTable!.fetchSchema(uid: widget.uid);
+      return selectedTable!.schema;
+    } else {
+      final tables = await dataLogic.getTables(uid: widget.uid);
+      return tables ?? [];
+    }
   }
 
   @override
@@ -199,11 +214,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                 const SizedBox(
                   height: 10,
                 ), //⚠️create function to loop through nocobase table and call it here.⚠️
-                _dataButton("Table 1"),
-                _dataButton("Table 2"),
-                _dataButton("Table 3"),
-                _dataButton("Table 4"),
-                _dataButton("Table 5"),
+
                 const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
