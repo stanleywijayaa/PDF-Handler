@@ -127,8 +127,8 @@ class _CreateTemplateState extends State<CreateTemplate> {
                 Container(
                   height: 100,
                   width: double.infinity,
-                  color: const Color.fromARGB(255, 0, 255, 0),
-                  child: IconButton(onPressed: (){}, icon: Icon(CupertinoIcons.add_circled))
+                  color: const Color.fromARGB(255, 117, 250, 105),
+                  child: IconButton(onPressed: (){}, icon: Icon(Icons.file_upload_outlined),)
                 ),
                 Container(
                   color: const Color(0xFF464646),
