@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pdf_handler/model/template.dart';
-import 'package:pdf_handler/services/custdata_logic.dart';
+import 'package:pdf_handler/services/data_logic.dart';
 
 class SearchCustomer extends StatefulWidget {
   final Template? template;

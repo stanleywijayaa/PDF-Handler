@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:pdf_handler/model/schema.dart';
+import 'package:pdf_handler/model/table.dart';
 
 final nocoURL = 'http://localhost:3000';
 
@@ -24,7 +26,7 @@ class DataLogic {
     }
   }
 
-  Future<List<Object>>? getTables({required int uid}) async {
+  Future<List<TableModel>>? getTables({required int uid}) async {
     final response = await http.post(
       Uri.parse('$nocoURL/data/tables'),
       headers: {'Content-Type': 'application/json'},
@@ -37,7 +39,7 @@ class DataLogic {
     return tables;
   }
 
-  Future<List<Object>>? getSchema({
+  Future<List<Schema>>? getSchema({
     required String tableName,
     required int uid,
   }) async {
