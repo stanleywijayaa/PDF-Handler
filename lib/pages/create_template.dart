@@ -263,7 +263,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                       SizedBox(width: 40),
                     ],
                   ),
-                ), //⚠️create function to loop through nocobase table and call it here.⚠️
+                ),
                 Expanded(
                   child: FutureBuilder(
                     future: _futureDataCached,
@@ -279,7 +279,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                       final items = snapshot.data!;
                       return ListView.builder(
                         physics: ClampingScrollPhysics(),
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(12),
                         itemCount: items.length,
                         itemBuilder: (context, index) {
                           final item = items[index];
@@ -291,23 +291,26 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           } else {
                             titleText = item.toString();
                           }
-                          return InkWell(
-                            onTap: () => _selectItem(item),
-                            child: Card(
-                              color:
-                                  _selectedData == item
-                                      ? Colors.blue
-                                      : const Color.fromARGB(
-                                        255,
-                                        240,
-                                        240,
-                                        240,
-                                      ),
-                              margin: EdgeInsets.symmetric(vertical: 6),
+                          return Card(
+                            clipBehavior: Clip.antiAlias,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.all(
+                                Radius.circular(8),
+                              ),
+                            ),
+                            color:
+                                _selectedData == item
+                                    ? Colors.blue
+                                    : const Color.fromARGB(255, 240, 240, 240),
+                            margin: EdgeInsets.symmetric(vertical: 4),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () => _selectItem(item),
                               child: ListTile(
                                 title: Text(
                                   titleText,
                                   style: TextStyle(
+                                    fontSize: 14,
                                     color:
                                         _selectedData == item
                                             ? Colors.white
