@@ -1,6 +1,6 @@
 import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
+import 'package:internet_file/internet_file.dart';
+import 'package:pdfx/pdfx.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/table.dart';
@@ -17,6 +17,7 @@ class CreateTemplate extends StatefulWidget {
 }
 
 class _CreateTemplateState extends State<CreateTemplate> {
+  late final PdfControllerPinch _pdfController;
   late TextEditingController _controller;
   final DataLogic dataLogic = DataLogic();
   final FocusNode _focusNode = FocusNode();
@@ -28,10 +29,20 @@ class _CreateTemplateState extends State<CreateTemplate> {
   String selectedComponent = "";
   Future<List<dynamic>>? _futureDataCached;
   String fileName = '';
+  int pdfPageNum = 1;
+  int pdfTotalPage = 1;
+  double pdfWidth = 0, pdfHeight = 0;
 
   @override
   void initState() {
     super.initState();
+    _pdfController = PdfControllerPinch(
+      document: PdfDocument.openData(
+        InternetFile.get(
+          'https://cdn.syncfusion.com/content/PDFViewer/flutter-succinctly.pdf',
+        ),
+      ),
+    );
     _controller = TextEditingController();
     _focusNode.addListener(() {
       setState(() {
@@ -43,6 +54,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
 
   @override
   void dispose() {
+    _pdfController.dispose();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -74,6 +86,15 @@ class _CreateTemplateState extends State<CreateTemplate> {
         _selectedData = item;
       }
     });
+  }
+
+  void _setPageData(PdfDocument document) async {
+    final page = await document.getPage(1);
+    setState(() {
+      pdfHeight = page.height;
+      pdfWidth = page.width;
+    });
+    page.close();
   }
 
   @override
@@ -168,21 +189,25 @@ class _CreateTemplateState extends State<CreateTemplate> {
             child: Column(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Center(
-                        child: Container(
-                          width: 600,
-                          height: 800,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black),
-                            color: Colors.white,
-                          ),
-                          child: const Center(child: Text("PDF Preview Here")),
-                        ),
-                      ),
+                  child: Container(
+                    color: Color.fromARGB(255, 100, 100, 100),
+                    child: PdfViewPinch(
+                      onDocumentLoaded:
+                          (document) => setState(() async {
+                            pdfTotalPage = document.pagesCount;
+                            _setPageData(document);
+                          }),
+                      onPageChanged:
+                          (page) => setState(() {
+                            pdfPageNum = page;
+                          }),
+                      onDocumentError:
+                          (error) => Text('Error rendering pdf: $error'),
+                      padding: 10,
+                      maxScale: 1,
+                      minScale: 1,
+                      controller: _pdfController,
+                      scrollDirection: Axis.vertical,
                     ),
                   ),
                 ),
@@ -193,18 +218,18 @@ class _CreateTemplateState extends State<CreateTemplate> {
                     vertical: 10,
                   ),
                   color: Colors.white,
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "1200x800",
+                        '${pdfWidth}x${pdfHeight}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
                       Text(
-                        "Page: 1/3",
+                        "Page: $pdfPageNum/$pdfTotalPage",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
