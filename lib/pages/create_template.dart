@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/table.dart';
@@ -24,6 +25,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   bool _isFocused = false;
   bool _saved = false;
   String tableTitle = 'Data Fields';
+  String selectedComponent = "";
   Future<List<dynamic>>? _futureDataCached;
 
   @override
@@ -125,33 +127,20 @@ class _CreateTemplateState extends State<CreateTemplate> {
                 Container(
                   height: 100,
                   width: double.infinity,
-                  color: const Color.fromARGB(255, 199, 199, 199),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "New",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "Resize",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
+                  color: const Color.fromARGB(255, 0, 255, 0),
+                  child: IconButton(onPressed: (){}, icon: Icon(CupertinoIcons.add_circled))
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  "Components",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Container(
+                  color: const Color(0xFF464646),
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: const Text(
+                    textAlign: TextAlign.center,
+                    "Components",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(
@@ -299,14 +288,11 @@ class _CreateTemplateState extends State<CreateTemplate> {
                               color:
                                   _selectedData == item
                                       ? Colors.blue
-                                      : const Color.fromARGB(
-                                        255,
-                                        255,
-                                        255,
-                                        255,
-                                      ),
+                                      : const Color.fromARGB(255, 240, 240, 240),
                               margin: EdgeInsets.symmetric(vertical: 6),
-                              child: ListTile(title: Text(titleText)),
+                              child: ListTile(title: Text(titleText, 
+                                                style: TextStyle(
+                                                  color: _selectedData == item ? Colors.white : Colors.black))),
                             ),
                           );
                         },
@@ -382,14 +368,16 @@ class _CreateTemplateState extends State<CreateTemplate> {
 
   Widget _componentButton(String label) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {setState(() {
+          selectedComponent = label;
+        });},
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[600],
-          minimumSize: const Size(150, 40),
+          backgroundColor: selectedComponent == label ? Colors.blue : Color.fromARGB(255, 240, 240, 240),
+          minimumSize: const Size(300, 50),
         ),
-        child: Text(label, style: const TextStyle(color: Colors.white)),
+        child: Text(label, style: TextStyle(color: selectedComponent == label ? Colors.white : Colors.black)),
       ),
     );
   }
