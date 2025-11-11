@@ -62,13 +62,23 @@ class _SearchTemplateState extends State<SearchTemplate> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(
-                    'Select Template',
-                    style: GoogleFonts.nunito(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
-                      color: const Color.fromARGB(255, 46, 46, 46),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(Icons.arrow_back),
+                      ),
+                      Text(
+                        'Select Template',
+                        style: GoogleFonts.nunito(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
+                          color: const Color.fromARGB(255, 46, 46, 46),
+                        ),
+                      ),
+                      SizedBox(width: 40),
+                    ],
                   ),
                   SizedBox(height: 12),
                   TextFormField(
@@ -177,6 +187,7 @@ class _SearchTemplateState extends State<SearchTemplate> {
                                             template.title,
                                             textAlign: TextAlign.center,
                                             style: GoogleFonts.nunito(
+                                              color: Colors.black,
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
                                             ),
