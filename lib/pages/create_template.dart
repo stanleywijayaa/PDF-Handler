@@ -120,7 +120,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
               children: [
                 Container(
                   height: 100,
-                  width: max(MediaQuery.of(context).size.width * 0.18, 200),
+                  width: double.infinity,
                   color: const Color.fromARGB(255, 199, 199, 199),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -222,40 +222,40 @@ class _CreateTemplateState extends State<CreateTemplate> {
             child: Column(
               children: [
                 Container(
-                  padding: EdgeInsets.all(8),
+                  padding: EdgeInsets.symmetric(vertical: 8),
                   width: double.infinity,
                   color: const Color.fromARGB(255, 70, 70, 70),
-                  child: Stack(
-                    alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _selectedData = null;
-                              selectedTable = null;
-                              _futureDataCached = dataLogic.getTables(
-                                uid: widget.uid,
-                              );
-                            });
-                          },
+                      IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 20,
                         ),
+                        onPressed: () {
+                          setState(() {
+                            _selectedData = null;
+                            selectedTable = null;
+                            tableTitle = 'Data Fields';
+                            _futureDataCached = dataLogic.getTables(
+                              uid: widget.uid,
+                            );
+                          });
+                        },
                       ),
-                      Center(
+                      Expanded(
                         child: Text(
                           tableTitle,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
                             color: Color.fromARGB(255, 255, 255, 255),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 40),
                     ],
                   ),
                 ), //⚠️create function to loop through nocobase table and call it here.⚠️
