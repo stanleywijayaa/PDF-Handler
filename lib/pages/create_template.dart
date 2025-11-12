@@ -148,6 +148,61 @@ class _CreateTemplateState extends State<CreateTemplate> {
     page.close();
   }
 
+  void _selectAnotherTable() {
+    if (_placedComponents.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            actionsAlignment: MainAxisAlignment.spaceEvenly,
+            backgroundColor: const Color.fromARGB(255, 210, 210, 210),
+            title: Center(
+              child: Text(
+                'Remove Fields',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 0, 0, 0),
+                ),
+              ),
+            ),
+            content: Text(
+              'You can only use one data table.\nSelecting another table will remove all current fields',
+              style: TextStyle(color: Colors.black),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Cancel', style: TextStyle(color: Colors.white)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () {
+                  setState(() {
+                    _placedComponents.clear();
+                    _selectedData = null;
+                    selectedTable = null;
+                    tableTitle = 'Data Fields';
+                    _futureDataCached = dataLogic.getTables(uid: widget.uid);
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: Text('Remove', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      setState(() {
+        _placedComponents.clear();
+        _selectedData = null;
+        selectedTable = null;
+        tableTitle = 'Data Fields';
+        _futureDataCached = dataLogic.getTables(uid: widget.uid);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -260,7 +315,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           trailing: IconButton(
                             onPressed: () {
                               _placedComponents.removeAt(index);
-                              setState(() { });
+                              setState(() {});
                             },
                             icon: Icon(Icons.delete, size: 20),
                           ),
@@ -340,8 +395,13 @@ class _CreateTemplateState extends State<CreateTemplate> {
                                 ),
                                 child: _buildDraggableBox(component),
                                 onDragEnd: (details) {
-                                  final RenderBox box =pdfAreaKey.currentContext!.findRenderObject() as RenderBox;
-                                  final localOffset = box.globalToLocal(details.offset);
+                                  final RenderBox box =
+                                      pdfAreaKey.currentContext!
+                                              .findRenderObject()
+                                          as RenderBox;
+                                  final localOffset = box.globalToLocal(
+                                    details.offset,
+                                  );
                                   setState(() {
                                     final updated = component.copyWith(
                                       x: localOffset.dx,
@@ -419,16 +479,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                             color: Colors.white,
                             size: 20,
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _selectedData = null;
-                              selectedTable = null;
-                              tableTitle = 'Data Fields';
-                              _futureDataCached = dataLogic.getTables(
-                                uid: widget.uid,
-                              );
-                            });
-                          },
+                          onPressed: () => _selectAnotherTable(),
                         )
                       else
                         SizedBox(width: 40, height: 40),
