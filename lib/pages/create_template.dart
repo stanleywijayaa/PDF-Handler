@@ -35,7 +35,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   int pdfTotalPage = 1;
   double pdfWidth = 0, pdfHeight = 0;
   bool isLoading = true;
-  List<Field> _placedComponents = [];
+  final List<Field> _placedComponents = [];
 
   @override
   void initState() {
@@ -202,13 +202,33 @@ class _CreateTemplateState extends State<CreateTemplate> {
                     style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ), //⚠️add _onpressed function under this later⚠️.
+                const SizedBox(height: 10),
                 _componentButton("Text Box"),
                 _componentButton("Check Box"),
                 _componentButton("Radio Button"),
                 _componentButton("Signature"),
+                const SizedBox(height: 10),
+                Container(
+                  color: const Color(0xFF464646),
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: const Text(
+                    textAlign: TextAlign.center,
+                    "Fields",
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _placedComponents.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        tileColor: Colors.cyan,
+                        title: Text(_placedComponents[index].fieldName),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           ),
