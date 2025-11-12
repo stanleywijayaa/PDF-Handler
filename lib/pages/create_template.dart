@@ -32,6 +32,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   int pdfPageNum = 1;
   int pdfTotalPage = 1;
   double pdfWidth = 0, pdfHeight = 0;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -91,6 +92,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   void _setPageData(PdfDocument document) async {
     final page = await document.getPage(1);
     setState(() {
+      isLoading = false;
       pdfHeight = page.height;
       pdfWidth = page.width;
     });
@@ -189,26 +191,39 @@ class _CreateTemplateState extends State<CreateTemplate> {
             child: Column(
               children: [
                 Expanded(
-                  child: Container(
-                    color: Color.fromARGB(255, 100, 100, 100),
-                    child: PdfViewPinch(
-                      onDocumentLoaded:
-                          (document) => setState(() async {
-                            pdfTotalPage = document.pagesCount;
-                            _setPageData(document);
-                          }),
-                      onPageChanged:
-                          (page) => setState(() {
-                            pdfPageNum = page;
-                          }),
-                      onDocumentError:
-                          (error) => Text('Error rendering pdf: $error'),
-                      padding: 10,
-                      maxScale: 1,
-                      minScale: 1,
-                      controller: _pdfController,
-                      scrollDirection: Axis.vertical,
-                    ),
+                  child: Stack(
+                    children: [
+                      Container(
+                        color: Color.fromARGB(255, 100, 100, 100),
+                        child: PdfViewPinch(
+                          onDocumentLoaded:
+                              (document) => setState(() async {
+                                pdfTotalPage = document.pagesCount;
+                                _setPageData(document);
+                              }),
+                          onPageChanged:
+                              (page) => setState(() {
+                                pdfPageNum = page;
+                              }),
+                          onDocumentError:
+                              (error) => Text('Error rendering pdf: $error'),
+                          padding: 10,
+                          maxScale: 1,
+                          minScale: 1,
+                          controller: _pdfController,
+                          scrollDirection: Axis.vertical,
+                        ),
+                      ),
+                      if (isLoading)
+                        Container(
+                          color: const Color.fromARGB(255, 100, 100, 100),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 // ==== BOTTOM BAR (OPTIONAL PAGE INFO) ====
@@ -222,7 +237,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${pdfWidth}x${pdfHeight}',
+                        '${pdfWidth}x$pdfHeight',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
