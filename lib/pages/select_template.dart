@@ -161,15 +161,33 @@ class _SelectTemplateState extends State<SelectTemplate> {
                                     setState(() {
                                       selectedTemplate = template;
                                     });
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) => SearchCustomer(
-                                              template: selectedTemplate,
-                                              uid: widget.uid,
-                                            ),
+                                    showGeneralDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      barrierLabel: '',
+                                      barrierColor: Colors.black54,
+                                      transitionDuration: const Duration(
+                                        milliseconds: 180,
                                       ),
+                                      pageBuilder: (context, anim1, anim2) {
+                                        return Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(48),
+                                            child: Container(
+                                              color: const Color.fromARGB(
+                                                255,
+                                                255,
+                                                255,
+                                                255,
+                                              ),
+                                              child: SearchCustomer(
+                                                template: template,
+                                                uid: widget.uid,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     );
                                   },
                                   child: Card(
