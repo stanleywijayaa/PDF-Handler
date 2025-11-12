@@ -1,12 +1,13 @@
 import 'dart:math';
-import 'package:internet_file/internet_file.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:flutter/material.dart';
-import 'package:pdf_handler/model/schema.dart';
+import 'package:pdf_handler/model/field.dart';
 import 'package:pdf_handler/model/table.dart';
+import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/template.dart';
-import 'package:pdf_handler/pages/search_customer.dart';
+import 'package:internet_file/internet_file.dart';
 import 'package:pdf_handler/services/data_logic.dart';
+import 'package:pdf_handler/pages/search_customer.dart';
 
 class CreateTemplate extends StatefulWidget {
   final String hintText = "Untitled Form";
@@ -33,6 +34,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   int pdfTotalPage = 1;
   double pdfWidth = 0, pdfHeight = 0;
   bool isLoading = true;
+  List<Field> _placedComponents = [];
 
   @override
   void initState() {
@@ -47,7 +49,14 @@ class _CreateTemplateState extends State<CreateTemplate> {
     _controller = TextEditingController();
     _focusNode.addListener(() {
       setState(() {
-        _isFocused = _focusNode.hasFocus;
+          _isFocused = _focusNode.hasFocus;
+          _placedComponents.add(Field(
+          fieldName: "$selectedComponent\n${_selectedData?.fieldName}",
+          dataField: _selectedData!.dataField,
+          x: const Offset(100, 100).dx,
+          y: const Offset(100, 100).dy
+          ),
+        );
       });
     });
     _futureDataCached = _futureData();
@@ -62,14 +71,37 @@ class _CreateTemplateState extends State<CreateTemplate> {
   }
 
   Future<List<dynamic>> _futureData() async {
-    if (_selectedData != null) {
-      await _selectedData!.fetchSchema(uid: widget.uid);
-      return _selectedData!.schema;
+    if (selectedTable != null) {
+      await selectedTable!.fetchSchema(uid: widget.uid);
+      return selectedTable!.schema;
     } else {
       final tables = await dataLogic.getTables(uid: widget.uid);
       return tables ?? [];
     }
   }
+
+  void _addDraggableComponent() {
+  if (_selectedData == null || selectedComponent.isEmpty) return;
+
+  // If the user selected a Schema (field)
+  String fieldKey = '';
+  if (_selectedData is Schema) {
+    fieldKey = (_selectedData as Schema).title;
+  } else {
+    fieldKey = 'Unnamed Field';
+  }
+
+  setState(() {
+    _placedComponents.add(
+      Field(
+        fieldName: "$selectedComponent\n${_selectedData?.fieldName}",
+        dataField: _selectedData!.dataField,
+        x: const Offset(100, 100).dx,
+        y: const Offset(100, 100).dy
+        ),
+      );
+  });
+}
 
   void _selectItem(dynamic item) {
     setState(() {
@@ -84,7 +116,9 @@ class _CreateTemplateState extends State<CreateTemplate> {
         tableTitle = selectedTable!.title;
       } else if (item is Schema) {
         // Optional: do something if a Schema is selected
-        _selectedData = item;
+        if (selectedComponent.isNotEmpty) {
+          _addDraggableComponent();
+        }
       }
     });
   }
@@ -214,6 +248,30 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           scrollDirection: Axis.vertical,
                         ),
                       ),
+                        //Draggable overlay
+                        ..._placedComponents.map((component) {
+                        return Positioned(
+                          left: component.x,
+                          top: component.y,
+                          child: Draggable(
+                            feedback: _buildDraggableBox(component.fieldName, isDragging: true),
+                            childWhenDragging: Opacity(
+                              opacity: 0.5,
+                              child: _buildDraggableBox(component.fieldName),
+                            ),
+                            child: _buildDraggableBox(component.fieldName),
+                            onDragEnd: (details) {
+                              setState(() {
+                                // adjust offset for AppBar etc.
+                                final newOffset = details.offset - const Offset(0, 80);
+                                final updated = component.copyWith(x: newOffset.dx, y: newOffset.dy);
+                                final index = _placedComponents.indexOf(component);
+                                _placedComponents[index] = updated;
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
                       if (isLoading)
                         Container(
                           color: const Color.fromARGB(255, 100, 100, 100),
@@ -548,6 +606,24 @@ class _CreateTemplateState extends State<CreateTemplate> {
           ),
         );
       },
+    );
+  }
+  Widget _buildDraggableBox(String text, {bool isDragging = false}) {
+    return Container(
+      width: 150,
+      height: 50,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: isDragging
+            ? Colors.blue.withValues(alpha: 0.5)
+            : const Color.fromARGB(255, 0, 122, 255),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+      ),
     );
   }
 }
