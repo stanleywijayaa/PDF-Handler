@@ -88,7 +88,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
     setState(() {
       _placedComponents.add(
         Field(
-          fieldName: "$selectedComponent\n${selectedField!.fieldName}",
+          fieldName: selectedField!.fieldName,
           dataField: selectedField!.dataField,
           x: const Offset(100, 100).dx,
           y: const Offset(100, 100).dy,
@@ -248,19 +248,18 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           top: component.y,
                           child: Draggable(
                             feedback: _buildDraggableBox(
-                              component.fieldName,
+                              component,
                               isDragging: true,
                             ),
                             childWhenDragging: Opacity(
                               opacity: 0.5,
-                              child: _buildDraggableBox(component.fieldName),
+                              child: _buildDraggableBox(component),
                             ),
-                            child: _buildDraggableBox(component.fieldName),
+                            child: _buildDraggableBox(component),
                             onDragEnd: (details) {
                               setState(() {
                                 // adjust offset for AppBar etc.
-                                final newOffset =
-                                    details.offset - const Offset(0, 80);
+                                final newOffset = details.offset;
                                 final updated = component.copyWith(
                                   x: newOffset.dx,
                                   y: newOffset.dy,
@@ -273,7 +272,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                             },
                           ),
                         );
-                      }).toList(),
+                      }),
                       if (isLoading)
                         Container(
                           color: const Color.fromARGB(255, 100, 100, 100),
@@ -611,20 +610,23 @@ class _CreateTemplateState extends State<CreateTemplate> {
     );
   }
 
-  Widget _buildDraggableBox(String text, {bool isDragging = false}) {
+  Widget _buildDraggableBox(Field field, {bool isDragging = false}) {
     return Container(
       width: 150,
       height: 50,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color:
-            isDragging
-                ? Colors.blue.withValues(alpha: 0.5)
-                : const Color.fromARGB(255, 0, 122, 255),
+        border: Border.all(
+          color:
+              isDragging
+                  ? Colors.blue.withValues(alpha: 0.5)
+                  : const Color.fromARGB(255, 0, 122, 255),
+          width: 2,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        text,
+        field.fieldName,
         textAlign: TextAlign.center,
         style: const TextStyle(color: Colors.white, fontSize: 14),
       ),
