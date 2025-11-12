@@ -24,4 +24,8 @@ class Field {
     this.width = width;
     this.height = height;
   }
+
+  Field copyWith({double? x, double? y, double? height, double? width, String? fieldName, String? dataField}){
+    return Field(fieldName: fieldName ?? this.fieldName, dataField: dataField ?? this.dataField, x: x ?? this.x, y: y ?? this.y, height: height ?? this.height, width: width ?? this.width);
+  }
 }
