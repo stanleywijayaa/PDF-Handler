@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pdf_handler/pages/search_template.dart';
+import 'package:pdf_handler/pages/select_template.dart';
 import 'package:pdf_handler/pages/create_template.dart';
 
 class MainPage extends StatelessWidget {
@@ -26,7 +26,7 @@ class MainPage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _button(context, "Create Template Page", CreateTemplate(uid: uid)),
-          _button(context, "Search Template Page", SearchTemplate(uid: uid)),
+          _button(context, "Search Template Page", SelectTemplate(uid: uid)),
         ],
       ),
     );

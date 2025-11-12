@@ -33,7 +33,7 @@ class TemplateLogic {
       final data = response.bodyBytes;
       return data;
     } else {
-      throw Exception("Failed to fetch PDF URL");
+      throw Exception("Failed to fetch PDF");
     }
   }
 }

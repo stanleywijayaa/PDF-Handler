@@ -4,16 +4,17 @@ import 'package:pdf_handler/model/template.dart';
 import 'package:pdf_handler/pages/search_customer.dart';
 import 'package:pdf_handler/services/template_logic.dart';
 import 'package:pdf_handler/services/user_logic.dart';
+import 'package:pdfx/pdfx.dart';
 import 'package:web_smooth_scroll/web_smooth_scroll.dart';
 
-class SearchTemplate extends StatefulWidget {
+class SelectTemplate extends StatefulWidget {
   final int uid;
-  const SearchTemplate({super.key, required this.uid});
+  const SelectTemplate({super.key, required this.uid});
   @override
-  State<SearchTemplate> createState() => _SearchTemplateState();
+  State<SelectTemplate> createState() => _SelectTemplateState();
 }
 
-class _SearchTemplateState extends State<SearchTemplate> {
+class _SelectTemplateState extends State<SelectTemplate> {
   late ScrollController _scrollController;
   Template? selectedTemplate;
   late Future<List<Template>> _futureTemplates = Future.value([]);
@@ -119,14 +120,17 @@ class _SearchTemplateState extends State<SearchTemplate> {
                           return Text('Error: ${snapshot.error}');
                         } else if (!snapshot.hasData ||
                             snapshot.data!.isEmpty) {
-                          return const Text('No templates found');
+                          return const Text(
+                            'No templates found',
+                            style: TextStyle(color: Colors.black),
+                          );
                         }
 
                         final templates = snapshot.data!;
 
                         return LayoutBuilder(
                           builder: (context, constraints) {
-                            const double itemWidth = 200;
+                            const double itemWidth = 250;
                             int crossAxisCount =
                                 (constraints.maxWidth / itemWidth).floor();
                             crossAxisCount =
@@ -138,14 +142,21 @@ class _SearchTemplateState extends State<SearchTemplate> {
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: crossAxisCount,
-                                    crossAxisSpacing: 16,
+                                    //crossAxisSpacing: 16,
                                     mainAxisSpacing: 16,
-                                    childAspectRatio: 1,
+                                    childAspectRatio: 0.8,
                                   ),
                               itemCount: templates.length,
                               itemBuilder: (context, index) {
                                 final template = templates[index];
-                                return GestureDetector(
+                                return InkWell(
+                                  radius: 12,
+                                  hoverColor: Color.fromARGB(
+                                    100,
+                                    200,
+                                    200,
+                                    200,
+                                  ),
                                   onTap: () {
                                     setState(() {
                                       selectedTemplate = template;
@@ -163,6 +174,8 @@ class _SearchTemplateState extends State<SearchTemplate> {
                                   },
                                   child: Card(
                                     elevation: 3,
+                                    color: Colors.transparent,
+                                    shadowColor: Colors.transparent,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),
@@ -172,15 +185,8 @@ class _SearchTemplateState extends State<SearchTemplate> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          const Icon(
-                                            Icons.picture_as_pdf,
-                                            size: 48,
-                                            color: Color.fromARGB(
-                                              255,
-                                              46,
-                                              46,
-                                              46,
-                                            ),
+                                          PdfFirstPagePreview(
+                                            pdfId: template.id,
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
@@ -217,6 +223,73 @@ class _SearchTemplateState extends State<SearchTemplate> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class PdfFirstPagePreview extends StatefulWidget {
+  final int pdfId;
+  const PdfFirstPagePreview({super.key, required this.pdfId});
+
+  @override
+  State<PdfFirstPagePreview> createState() => _PdfFirstPagePreviewState();
+}
+
+class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
+  PdfDocument? _document;
+  PdfPageImage? _pageImage;
+  TemplateLogic templateLogic = TemplateLogic();
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFirstPage();
+  }
+
+  Future<void> _loadFirstPage() async {
+    try {
+      // Open the document (from file, asset, or URL)
+      final bytes = await templateLogic.getTemplate(templateId: widget.pdfId);
+      if (bytes == null) throw Exception('Failed to get template');
+      final doc = await PdfDocument.openData(bytes);
+      final page = await doc.getPage(1);
+
+      // Render it to an image
+      final pageImage = await page.render(
+        width: page.width,
+        height: page.height,
+        format: PdfPageImageFormat.png,
+      );
+
+      await page.close();
+
+      setState(() {
+        _document = doc;
+        _pageImage = pageImage;
+        _loading = false;
+      });
+    } catch (e) {
+      print('Error loading PDF: $e');
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _document?.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child:
+          _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _pageImage != null
+              ? Image.memory(_pageImage!.bytes)
+              : const Center(child: Icon(Icons.picture_as_pdf, size: 40)),
     );
   }
 }
