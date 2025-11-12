@@ -1,6 +1,8 @@
 import 'dart:math';
+import 'package:flutter/services.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:pdf_handler/model/field.dart';
 import 'package:pdf_handler/model/table.dart';
 import 'package:pdf_handler/model/schema.dart';
@@ -18,7 +20,7 @@ class CreateTemplate extends StatefulWidget {
 }
 
 class _CreateTemplateState extends State<CreateTemplate> {
-  late final PdfControllerPinch _pdfController;
+  PdfControllerPinch? _pdfController;
   late TextEditingController _controller;
   final DataLogic dataLogic = DataLogic();
   final FocusNode _focusNode = FocusNode();
@@ -40,13 +42,6 @@ class _CreateTemplateState extends State<CreateTemplate> {
   @override
   void initState() {
     super.initState();
-    _pdfController = PdfControllerPinch(
-      document: PdfDocument.openData(
-        InternetFile.get(
-          'https://cdn.syncfusion.com/content/PDFViewer/flutter-succinctly.pdf',
-        ),
-      ),
-    );
     _controller = TextEditingController();
     _focusNode.addListener(() {
       setState(() {
@@ -58,10 +53,31 @@ class _CreateTemplateState extends State<CreateTemplate> {
 
   @override
   void dispose() {
-    _pdfController.dispose();
+    _pdfController?.dispose();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  void _loadPdf() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result != null && result.files.isNotEmpty) {
+      Uint8List? fileBytes = result.files.first.bytes; // file content
+      String fileName = result.files.first.name; // file name
+      print('Picked file: $fileName');
+
+      // If you want to load it into PdfControllerPinch:
+      _pdfController = PdfControllerPinch(
+        document: PdfDocument.openData(fileBytes!),
+      );
+
+      setState(() {});
+    } else {
+      print('User canceled the picker');
+    }
   }
 
   Future<List<dynamic>> _futureData() async {
@@ -185,7 +201,9 @@ class _CreateTemplateState extends State<CreateTemplate> {
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     splashColor: const Color.fromARGB(255, 77, 184, 77),
-                    onTap: () {},
+                    onTap: () {
+                      _loadPdf();
+                    },
                     child: SizedBox(
                       height: 100,
                       width: double.infinity,
@@ -241,7 +259,9 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           trailing: IconButton(
                             onPressed: () {
                               _placedComponents.removeAt(index);
-                              setState(() {});
+                              setState(() {
+                                _loadPdf();
+                              });
                             },
                             icon: Icon(Icons.delete, size: 20),
                           ),
@@ -268,74 +288,86 @@ class _CreateTemplateState extends State<CreateTemplate> {
           Expanded(
             child: Column(
               children: [
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Container(
-                        color: Color.fromARGB(255, 100, 100, 100),
-                        child: PdfViewPinch(
-                          onDocumentLoaded:
-                              (document) => setState(() async {
-                                pdfTotalPage = document.pagesCount;
-                                _setPageData(document);
-                              }),
-                          onPageChanged:
-                              (page) => setState(() {
-                                pdfPageNum = page;
-                              }),
-                          onDocumentError:
-                              (error) => Text('Error rendering pdf: $error'),
-                          padding: 10,
-                          maxScale: 1,
-                          minScale: 1,
-                          controller: _pdfController,
-                          scrollDirection: Axis.vertical,
+                _pdfController == null
+                    ? Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: Colors.grey,
+                        child: Center(
+                          child: Text('Import a PDF file to start'),
                         ),
                       ),
-                      //Draggable overlay
-                      ..._placedComponents.map((component) {
-                        return Positioned(
-                          left: component.x,
-                          top: component.y,
-                          child: Draggable(
-                            feedback: _buildDraggableBox(
-                              component,
-                              isDragging: true,
+                    )
+                    : Expanded(
+                      child: Stack(
+                        children: [
+                          Container(
+                            color: Color.fromARGB(255, 100, 100, 100),
+                            child: PdfViewPinch(
+                              onDocumentLoaded:
+                                  (document) => setState(() async {
+                                    pdfTotalPage = document.pagesCount;
+                                    _setPageData(document);
+                                  }),
+                              onPageChanged:
+                                  (page) => setState(() {
+                                    pdfPageNum = page;
+                                  }),
+                              onDocumentError:
+                                  (error) =>
+                                      Text('Error rendering pdf: $error'),
+                              padding: 10,
+                              maxScale: 1,
+                              minScale: 1,
+                              controller: _pdfController!,
+                              scrollDirection: Axis.vertical,
                             ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.5,
-                              child: _buildDraggableBox(component),
-                            ),
-                            child: _buildDraggableBox(component),
-                            onDragEnd: (details) {
-                              setState(() {
-                                // adjust offset for AppBar etc.
-                                final newOffset = details.offset;
-                                final updated = component.copyWith(
-                                  x: newOffset.dx,
-                                  y: newOffset.dy,
-                                );
-                                final index = _placedComponents.indexOf(
+                          ),
+                          //Draggable overlay
+                          ..._placedComponents.map((component) {
+                            return Positioned(
+                              left: component.x,
+                              top: component.y,
+                              child: Draggable(
+                                feedback: _buildDraggableBox(
                                   component,
-                                );
-                                _placedComponents[index] = updated;
-                              });
-                            },
-                          ),
-                        );
-                      }),
-                      if (isLoading)
-                        Container(
-                          color: const Color.fromARGB(255, 100, 100, 100),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.blue,
+                                  isDragging: true,
+                                ),
+                                childWhenDragging: Opacity(
+                                  opacity: 0.5,
+                                  child: _buildDraggableBox(component),
+                                ),
+                                child: _buildDraggableBox(component),
+                                onDragEnd: (details) {
+                                  setState(() {
+                                    // adjust offset for AppBar etc.
+                                    final newOffset = details.offset;
+                                    final updated = component.copyWith(
+                                      x: newOffset.dx,
+                                      y: newOffset.dy,
+                                    );
+                                    final index = _placedComponents.indexOf(
+                                      component,
+                                    );
+                                    _placedComponents[index] = updated;
+                                  });
+                                },
+                              ),
+                            );
+                          }),
+                          if (isLoading)
+                            Container(
+                              color: const Color.fromARGB(255, 100, 100, 100),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.blue,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                        ],
+                      ),
+                    ),
                 // ==== BOTTOM BAR (OPTIONAL PAGE INFO) ====
                 Container(
                   padding: const EdgeInsets.symmetric(
