@@ -23,6 +23,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   final DataLogic dataLogic = DataLogic();
   final FocusNode _focusNode = FocusNode();
   TableModel? selectedTable;
+  Field? selectedField;
   dynamic _selectedData;
   bool _isFocused = false;
   bool _saved = false;
@@ -49,14 +50,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
     _controller = TextEditingController();
     _focusNode.addListener(() {
       setState(() {
-          _isFocused = _focusNode.hasFocus;
-          _placedComponents.add(Field(
-          fieldName: "$selectedComponent\n${_selectedData?.fieldName}",
-          dataField: _selectedData!.dataField,
-          x: const Offset(100, 100).dx,
-          y: const Offset(100, 100).dy
-          ),
-        );
+        _isFocused = _focusNode.hasFocus;
       });
     });
     _futureDataCached = _futureData();
@@ -81,31 +75,32 @@ class _CreateTemplateState extends State<CreateTemplate> {
   }
 
   void _addDraggableComponent() {
-  if (_selectedData == null || selectedComponent.isEmpty) return;
+    if (selectedField == null || selectedComponent.isEmpty) return;
 
-  // If the user selected a Schema (field)
-  String fieldKey = '';
-  if (_selectedData is Schema) {
-    fieldKey = (_selectedData as Schema).title;
-  } else {
-    fieldKey = 'Unnamed Field';
-  }
+    // // If the user selected a Schema (field)
+    // String fieldKey = '';
+    // if (selectedField is Field) {
+    //   fieldKey = (_selectedData as Schema).title;
+    // } else {
+    //   fieldKey = 'Unnamed Field';
+    // }
 
-  setState(() {
-    _placedComponents.add(
-      Field(
-        fieldName: "$selectedComponent\n${_selectedData?.fieldName}",
-        dataField: _selectedData!.dataField,
-        x: const Offset(100, 100).dx,
-        y: const Offset(100, 100).dy
+    setState(() {
+      _placedComponents.add(
+        Field(
+          fieldName: "$selectedComponent\n${selectedField!.fieldName}",
+          dataField: selectedField!.dataField,
+          x: const Offset(100, 100).dx,
+          y: const Offset(100, 100).dy,
         ),
       );
-  });
-}
+    });
+  }
 
   void _selectItem(dynamic item) {
     setState(() {
       _selectedData = item;
+      //print(item.toString());
 
       if (item is TableModel) {
         selectedTable = item;
@@ -115,10 +110,8 @@ class _CreateTemplateState extends State<CreateTemplate> {
             .then((_) => selectedTable!.schema);
         tableTitle = selectedTable!.title;
       } else if (item is Schema) {
-        // Optional: do something if a Schema is selected
-        if (selectedComponent.isNotEmpty) {
-          _addDraggableComponent();
-        }
+        selectedField = Field(fieldName: item.title, dataField: item.fieldName);
+        _addDraggableComponent();
       }
     });
   }
@@ -248,13 +241,16 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           scrollDirection: Axis.vertical,
                         ),
                       ),
-                        //Draggable overlay
-                        ..._placedComponents.map((component) {
+                      //Draggable overlay
+                      ..._placedComponents.map((component) {
                         return Positioned(
                           left: component.x,
                           top: component.y,
                           child: Draggable(
-                            feedback: _buildDraggableBox(component.fieldName, isDragging: true),
+                            feedback: _buildDraggableBox(
+                              component.fieldName,
+                              isDragging: true,
+                            ),
                             childWhenDragging: Opacity(
                               opacity: 0.5,
                               child: _buildDraggableBox(component.fieldName),
@@ -263,9 +259,15 @@ class _CreateTemplateState extends State<CreateTemplate> {
                             onDragEnd: (details) {
                               setState(() {
                                 // adjust offset for AppBar etc.
-                                final newOffset = details.offset - const Offset(0, 80);
-                                final updated = component.copyWith(x: newOffset.dx, y: newOffset.dy);
-                                final index = _placedComponents.indexOf(component);
+                                final newOffset =
+                                    details.offset - const Offset(0, 80);
+                                final updated = component.copyWith(
+                                  x: newOffset.dx,
+                                  y: newOffset.dy,
+                                );
+                                final index = _placedComponents.indexOf(
+                                  component,
+                                );
                                 _placedComponents[index] = updated;
                               });
                             },
@@ -608,15 +610,17 @@ class _CreateTemplateState extends State<CreateTemplate> {
       },
     );
   }
+
   Widget _buildDraggableBox(String text, {bool isDragging = false}) {
     return Container(
       width: 150,
       height: 50,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: isDragging
-            ? Colors.blue.withValues(alpha: 0.5)
-            : const Color.fromARGB(255, 0, 122, 255),
+        color:
+            isDragging
+                ? Colors.blue.withValues(alpha: 0.5)
+                : const Color.fromARGB(255, 0, 122, 255),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
