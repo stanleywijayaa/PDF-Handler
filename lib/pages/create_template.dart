@@ -88,6 +88,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
     setState(() {
       _placedComponents.add(
         Field(
+          type: selectedComponent,
           fieldName: selectedField!.fieldName,
           dataField: selectedField!.dataField,
           x: const Offset(100, 100).dx,
@@ -110,7 +111,11 @@ class _CreateTemplateState extends State<CreateTemplate> {
             .then((_) => selectedTable!.schema);
         tableTitle = selectedTable!.title;
       } else if (item is Schema) {
-        selectedField = Field(fieldName: item.title, dataField: item.fieldName);
+        selectedField = Field(
+          type: selectedComponent,
+          fieldName: item.title,
+          dataField: item.fieldName,
+        );
         _addDraggableComponent();
       }
     });
@@ -220,11 +225,30 @@ class _CreateTemplateState extends State<CreateTemplate> {
                 ),
                 Expanded(
                   child: ListView.builder(
+                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                     itemCount: _placedComponents.length,
                     itemBuilder: (context, index) {
-                      return ListTile(
-                        tileColor: Colors.cyan,
-                        title: Text(_placedComponents[index].fieldName),
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadiusGeometry.all(
+                            Radius.circular(8),
+                          ),
+                        ),
+                        color: Colors.white,
+                        child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                          leading: Icon(Icons.text_fields, size: 20),
+                          minLeadingWidth: 0,
+                          minTileHeight: 10,
+                          title: Text(
+                            _placedComponents[index].fieldName,
+                            style: TextStyle(fontSize: 11),
+                          ),
+                          subtitle: Text(
+                            _placedComponents[index].dataField,
+                            style: TextStyle(fontSize: 9),
+                          ),
+                        ),
                       );
                     },
                   ),

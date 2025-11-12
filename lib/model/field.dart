@@ -1,4 +1,5 @@
 class Field {
+  final String? type;
   final String fieldName;
   final String dataField;
   double x;
@@ -9,6 +10,7 @@ class Field {
   Field({
     required this.fieldName,
     required this.dataField,
+    this.type,
     this.x = 0,
     this.y = 0,
     this.height = 0,
@@ -25,7 +27,22 @@ class Field {
     this.height = height;
   }
 
-  Field copyWith({double? x, double? y, double? height, double? width, String? fieldName, String? dataField}){
-    return Field(fieldName: fieldName ?? this.fieldName, dataField: dataField ?? this.dataField, x: x ?? this.x, y: y ?? this.y, height: height ?? this.height, width: width ?? this.width);
+  Field copyWith({
+    double? x,
+    double? y,
+    double? height,
+    double? width,
+    String? fieldName,
+    String? dataField,
+  }) {
+    return Field(
+      fieldName: fieldName ?? this.fieldName,
+      dataField: dataField ?? this.dataField,
+      x: x ?? this.x,
+      y: y ?? this.y,
+      height: height ?? this.height,
+      width: width ?? this.width,
+      type: type,
+    );
   }
 }
