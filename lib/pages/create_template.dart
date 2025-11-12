@@ -238,6 +238,13 @@ class _CreateTemplateState extends State<CreateTemplate> {
                         child: ListTile(
                           contentPadding: EdgeInsets.symmetric(horizontal: 8),
                           leading: Icon(Icons.text_fields, size: 20),
+                          trailing: IconButton(
+                            onPressed: () {
+                              _placedComponents.removeAt(index);
+                              setState(() {});
+                            },
+                            icon: Icon(Icons.delete, size: 20),
+                          ),
                           minLeadingWidth: 0,
                           minTileHeight: 10,
                           title: Text(
