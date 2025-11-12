@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/model/form.dart';
 import 'package:pdf_handler/model/template.dart';
@@ -22,5 +23,17 @@ class TemplateLogic {
     return details.map((detail) {
       return Template.fromJson(detail);
     }).toList();
+  }
+
+  Future<Uint8List?> getTemplate({required int templateId}) async {
+    final response = await http.get(
+      Uri.parse('$nodeURL/templates/getUrl?templateId=$templateId'),
+    );
+    if (response.statusCode == 200) {
+      final data = response.bodyBytes;
+      return data;
+    } else {
+      throw Exception("Failed to fetch PDF URL");
+    }
   }
 }

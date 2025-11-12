@@ -1,6 +1,9 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:pdf_handler/model/template.dart';
 import 'package:pdf_handler/services/data_logic.dart';
+import 'package:pdf_handler/services/template_logic.dart';
+import 'package:pdfx/pdfx.dart';
 
 class SearchCustomer extends StatefulWidget {
   final Template? template;
@@ -17,10 +20,10 @@ class SearchCustomer extends StatefulWidget {
 }
 
 class _SearchCustomerState extends State<SearchCustomer> {
-  //For search field later
   final TextEditingController _searchController = TextEditingController();
   double leftFraction = 0.6;
   final DataLogic api = DataLogic();
+  final TemplateLogic tempApi = TemplateLogic();
 
   List <Map<String, dynamic>> customers = [];
   List <Map<String, dynamic>> filteredCustomers =[];
@@ -31,6 +34,13 @@ class _SearchCustomerState extends State<SearchCustomer> {
   void initState() {
     super.initState();
     _loadCustomers();
+  }
+
+  Future<Uint8List?> _loadPdf() async {
+      final url = await tempApi.getTemplate(
+        templateId: widget.template!.id
+      );
+      return url;
   }
 
   Future<void> _loadCustomers() async {
@@ -91,12 +101,20 @@ class _SearchCustomerState extends State<SearchCustomer> {
               width: leftWidth,
               child: Container(
                 color: Colors.grey[200],
-                child: const Center(
-                  child: Text(
-                    "PDF Preview\n(coming later)",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                child: FutureBuilder<Uint8List?>(
+                  future: _loadPdf(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError || snapshot.data == null) {
+                      return Center(child: Text('Failed to load PDF'));
+                    } else {
+                      final pdfController = PdfControllerPinch(
+                        document: PdfDocument.openData(snapshot.data!),
+                      );
+                      return PdfViewPinch(controller: pdfController);
+                    }
+                  } ,
                 ),
               ),
             ),
