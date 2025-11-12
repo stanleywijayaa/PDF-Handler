@@ -37,6 +37,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   int pdfTotalPage = 1;
   double pdfWidth = 0, pdfHeight = 0;
   bool isLoading = true;
+  final GlobalKey pdfAreaKey = GlobalKey();
   final List<Field> _placedComponents = [];
 
   @override
@@ -259,9 +260,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           trailing: IconButton(
                             onPressed: () {
                               _placedComponents.removeAt(index);
-                              setState(() {
-                                _loadPdf();
-                              });
+                              setState(() { });
                             },
                             icon: Icon(Icons.delete, size: 20),
                           ),
@@ -301,6 +300,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                     )
                     : Expanded(
                       child: Stack(
+                        key: pdfAreaKey,
                         children: [
                           Container(
                             color: Color.fromARGB(255, 100, 100, 100),
@@ -340,12 +340,12 @@ class _CreateTemplateState extends State<CreateTemplate> {
                                 ),
                                 child: _buildDraggableBox(component),
                                 onDragEnd: (details) {
+                                  final RenderBox box =pdfAreaKey.currentContext!.findRenderObject() as RenderBox;
+                                  final localOffset = box.globalToLocal(details.offset);
                                   setState(() {
-                                    // adjust offset for AppBar etc.
-                                    final newOffset = details.offset;
                                     final updated = component.copyWith(
-                                      x: newOffset.dx,
-                                      y: newOffset.dy,
+                                      x: localOffset.dx,
+                                      y: localOffset.dy,
                                     );
                                     final index = _placedComponents.indexOf(
                                       component,
