@@ -711,7 +711,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
       child: Text(
         field.fieldName,
         textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: const TextStyle(color: Colors.black, fontSize: 14),
       ),
     );
   }
