@@ -20,6 +20,8 @@ class SearchCustomer extends StatefulWidget {
 }
 
 class _SearchCustomerState extends State<SearchCustomer> {
+  PdfControllerPinch? _pdfController;
+  Uint8List? _pdfBytes;
   final TextEditingController _searchController = TextEditingController();
   double leftFraction = 0.6;
   final DataLogic api = DataLogic();
@@ -28,12 +30,38 @@ class _SearchCustomerState extends State<SearchCustomer> {
   List <Map<String, dynamic>> customers = [];
   List <Map<String, dynamic>> filteredCustomers =[];
   bool isLoading = false;
+  bool isLoadingPdf = true;
   String? errorMessage;
+  String? errorMessagePDF;
 
   @override
   void initState() {
     super.initState();
     _loadCustomers();
+    _loadPdfBytes();
+  }
+
+  Future<void> _loadPdfBytes() async {
+    try {
+      final bytes = await _loadPdf();
+      if (bytes != null) {
+        _pdfBytes = bytes;
+        _pdfController = PdfControllerPinch(
+          document: PdfDocument.openData(_pdfBytes!),
+        );
+        setState(() => isLoadingPdf = false);
+      } else {
+          setState(() {
+            errorMessagePDF = "Failed to load PDF";
+            isLoadingPdf = false;
+          });
+      }
+    } catch (e) {
+        setState(() {
+          errorMessagePDF = e.toString();
+          isLoadingPdf = false;
+        });
+    }
   }
 
   Future<Uint8List?> _loadPdf() async {
@@ -87,6 +115,12 @@ class _SearchCustomerState extends State<SearchCustomer> {
   }
 
   @override
+  void dispose() {
+    _pdfController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -101,21 +135,49 @@ class _SearchCustomerState extends State<SearchCustomer> {
               width: leftWidth,
               child: Container(
                 color: Colors.grey[200],
-                child: FutureBuilder<Uint8List?>(
-                  future: _loadPdf(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError || snapshot.data == null) {
-                      return Center(child: Text('Failed to load PDF'));
-                    } else {
-                      final pdfController = PdfControllerPinch(
-                        document: PdfDocument.openData(snapshot.data!),
-                      );
-                      return PdfViewPinch(controller: pdfController);
-                    }
-                  } ,
-                ),
+                child: isLoadingPdf
+                  ? Center(child: CircularProgressIndicator())
+                  : errorMessagePDF != null
+                    ? Center(child: Text(errorMessagePDF!))
+                    : PdfViewPinch(controller: _pdfController!),
+                    // : LayoutBuilder(
+                    //   builder: (context, constraints) {
+                    //     final maxWidth = constraints.maxWidth;
+                    //     final singlePageWidth = 250.0;
+                    //     final pagesPerRow = (maxWidth / singlePageWidth).floor().clamp(1,10);
+                    //     final totalPages = _pdfController!.pagesCount;
+                    //     final rows = (totalPages! / pagesPerRow).ceil();
+                    //     return InteractiveViewer(
+                    //       panEnabled: true,
+                    //       scaleEnabled: true,
+                    //       minScale: 0.5,
+                    //       maxScale: 3.0,
+                    //       child: Column(
+                    //         children: List.generate(rows, (rowIndex) {
+                    //           final startPage = rowIndex * pagesPerRow + 1;
+                    //           final endPage = (startPage + pagesPerRow - 1).clamp(1, totalPages);
+                    //           return Row(
+                    //             mainAxisAlignment: MainAxisAlignment.center,
+                    //             children: [
+                    //               for (int pageNum = startPage; pageNum <= endPage; pageNum++)
+                    //               SizedBox(
+                    //                 width: maxWidth / pagesPerRow,
+                    //                 height: 400,
+                    //                 child: PdfViewPinch(
+                    //                   controller: _pdfController!,
+                    //                   initialPage: pageNum,
+                    //                 ),
+                    //               ),
+                    //             ],
+                    //           );
+                    //         })
+                    //       )
+                    //     );
+
+
+
+                    //   },
+                    // ),
               ),
             ),
 
