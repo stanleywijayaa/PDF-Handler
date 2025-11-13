@@ -4,6 +4,7 @@ import 'package:pdf_handler/model/template.dart';
 import 'package:pdf_handler/services/data_logic.dart';
 import 'package:pdf_handler/services/template_logic.dart';
 import 'package:pdfx/pdfx.dart';
+import 'package:file_saver/file_saver.dart';
 
 class SearchCustomer extends StatefulWidget {
   final Template? template;
@@ -20,12 +21,13 @@ class SearchCustomer extends StatefulWidget {
 }
 
 class _SearchCustomerState extends State<SearchCustomer> {
-  PdfControllerPinch? _pdfController;
+  Uint8List? pdfresult;
+  PdfControllerPinch? _pdfControllerPinch;
   Uint8List? _pdfBytes;
-  final TextEditingController _searchController = TextEditingController();
-  double leftFraction = 0.5;
   final DataLogic api = DataLogic();
   final TemplateLogic tempApi = TemplateLogic();
+  final TextEditingController _searchController = TextEditingController();
+  double leftFraction = 0.5;
 
   List <Map<String, dynamic>> customers = [];
   List <Map<String, dynamic>> filteredCustomers =[];
@@ -46,7 +48,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
       final bytes = await _loadPdf();
       if (bytes != null) {
         _pdfBytes = bytes;
-        _pdfController = PdfControllerPinch(
+        _pdfControllerPinch = PdfControllerPinch(
           document: PdfDocument.openData(_pdfBytes!),
         );
         setState(() => isLoadingPdf = false);
@@ -134,11 +136,12 @@ class _SearchCustomerState extends State<SearchCustomer> {
 
       if (pdfBytes != null && mounted) {
         setState(() {
-          _pdfController?.dispose();
-          _pdfController = PdfControllerPinch(
+          _pdfControllerPinch?.dispose();
+          _pdfControllerPinch = PdfControllerPinch(
             document: PdfDocument.openData(pdfBytes),
           );
           isLoadingPdf = false;
+          pdfresult = Uint8List.fromList(pdfBytes);
         });
       } else {
         setState(() {
@@ -156,7 +159,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
 
   @override
   void dispose() {
-    _pdfController?.dispose();
+    _pdfControllerPinch?.dispose();
     super.dispose();
   }
 
@@ -180,8 +183,8 @@ class _SearchCustomerState extends State<SearchCustomer> {
                   color: Colors.grey[200],
                   child: isLoadingPdf
                       ? const Center(child: CircularProgressIndicator())
-                      : (_pdfController != null)
-                          ? PdfViewPinch(controller: _pdfController!)
+                      : (_pdfControllerPinch != null)
+                          ? PdfViewPinch(controller: _pdfControllerPinch!)
                           : Center(
                               child: Text(
                                 errorMessagePDF ?? 'No PDF loaded',
@@ -222,11 +225,23 @@ class _SearchCustomerState extends State<SearchCustomer> {
                               color: Colors.grey.shade400,
                             ),
                             Container(
-                              width: 8,
-                              height: 40,
+                              width: 12,
+                              height: 50,
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade700,
                                 borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(3, (_) => Container(
+                                  width: 8,
+                                  height: 1,
+                                  margin: const EdgeInsets.symmetric(vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(1),
+                                  ),
+                                )),
                               ),
                             ),
                           ],
@@ -283,14 +298,37 @@ class _SearchCustomerState extends State<SearchCustomer> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: null,
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            child: const Text(
-                              "Export PDF",
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            onPressed: (_pdfControllerPinch == null || pdfresult == null)
+                              ? null
+                              : () async {
+                                try {
+                                  await FileSaver.instance.saveFile(
+                                    name: 'downloaded',
+                                    bytes: pdfresult!,
+                                    fileExtension: 'pdf'
+                                  );
+                                } catch (e) {
+                                  // ignore: use_build_context_synchronously
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to download PDF: $e')),
+                                  );
+                                }
+                              },
+                              style: ButtonStyle(
+                                padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 14)),
+                                foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                                  (states) {
+                                    if (states.contains(WidgetState.disabled)) {
+                                      return Colors.grey.shade400;
+                                    }
+                                    return Colors.white;
+                                  },
+                                ),
+                              ),
+                              child: const Text(
+                                "Download PDF",
+                                style: TextStyle(fontSize: 16),
+                              ),
                           ),
                         ),
                       ],
