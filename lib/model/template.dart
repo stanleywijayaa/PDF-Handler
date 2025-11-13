@@ -1,11 +1,14 @@
 import 'dart:typed_data';
 
+import 'package:pdfx/pdfx.dart';
+
 class Template {
   final int id;
   final String title;
   final Uint8List? pdfFile;
   final String tableName;
   final int fileSize;
+  PdfPageImage? preview;
 
   Template({
     required this.id,

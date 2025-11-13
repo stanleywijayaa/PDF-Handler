@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/model/table.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-final nodeURL = 'http://localhost:3000';
+final nodeURL = dotenv.env['NODE_URL'];
 
 class DataLogic {
   Future<List<Map<String, dynamic>>> getCustomers({

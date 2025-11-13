@@ -18,6 +18,8 @@ class _SelectTemplateState extends State<SelectTemplate> {
   late ScrollController _scrollController;
   Template? selectedTemplate;
   late Future<List<Template>> _futureTemplates = Future.value([]);
+  late List<Template> _allTemplates = [];
+  List<Template> _displayedTemplates = [];
 
   @override
   void initState() {
@@ -41,6 +43,29 @@ class _SelectTemplateState extends State<SelectTemplate> {
       } else {
         _futureTemplates = TemplateLogic.fetchTemplate(nocoApp);
       }
+    });
+    _allTemplates = await _futureTemplates;
+    _displayedTemplates = _allTemplates;
+  }
+
+  void _searchTemplate(String value) {
+    if (value.isEmpty) {
+      setState(() {
+        _displayedTemplates = _allTemplates;
+      });
+    }
+    List<Template> filteredTemplates =
+        _allTemplates
+            .where(
+              (element) =>
+                  element.tableName.toLowerCase().contains(
+                    value.toLowerCase(),
+                  ) ||
+                  element.title.toLowerCase().contains(value.toLowerCase()),
+            )
+            .toList();
+    setState(() {
+      _displayedTemplates = filteredTemplates;
     });
   }
 
@@ -83,6 +108,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                   ),
                   SizedBox(height: 12),
                   TextFormField(
+                    onChanged: (value) => _searchTemplate(value),
                     style: GoogleFonts.nunito(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -126,7 +152,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                           );
                         }
 
-                        final templates = snapshot.data!;
+                        final templates = _displayedTemplates;
 
                         return LayoutBuilder(
                           builder: (context, constraints) {
@@ -204,7 +230,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                                             MainAxisAlignment.center,
                                         children: [
                                           PdfFirstPagePreview(
-                                            pdfId: template.id,
+                                            template: template,
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
@@ -246,8 +272,8 @@ class _SelectTemplateState extends State<SelectTemplate> {
 }
 
 class PdfFirstPagePreview extends StatefulWidget {
-  final int pdfId;
-  const PdfFirstPagePreview({super.key, required this.pdfId});
+  final Template template;
+  const PdfFirstPagePreview({super.key, required this.template});
 
   @override
   State<PdfFirstPagePreview> createState() => _PdfFirstPagePreviewState();
@@ -266,30 +292,44 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
   }
 
   Future<void> _loadFirstPage() async {
-    try {
-      // Open the document (from file, asset, or URL)
-      final bytes = await templateLogic.getTemplate(templateId: widget.pdfId);
-      if (bytes == null) throw Exception('Failed to get template');
-      final doc = await PdfDocument.openData(bytes);
-      final page = await doc.getPage(1);
+    if (widget.template.preview == null) {
+      try {
+        // Open the document (from file, asset, or URL)
+        final bytes = await templateLogic.getTemplate(
+          templateId: widget.template.id,
+        );
+        if (bytes == null) throw Exception('Failed to get template');
+        final doc = await PdfDocument.openData(bytes);
+        final page = await doc.getPage(1);
 
-      // Render it to an image
-      final pageImage = await page.render(
-        width: page.width,
-        height: page.height,
-        format: PdfPageImageFormat.png,
-      );
+        // Render it to an image
+        final pageImage = await page.render(
+          width: page.width / 2.5,
+          height: page.height / 2.5,
+          quality: 100,
+          format: PdfPageImageFormat.png,
+        );
 
-      await page.close();
+        widget.template.preview = pageImage;
 
+        await page.close();
+
+        if (!mounted) return;
+
+        setState(() {
+          _document = doc;
+          _pageImage = pageImage;
+          _loading = false;
+        });
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _loading = false);
+      }
+    } else {
       setState(() {
-        _document = doc;
-        _pageImage = pageImage;
+        _pageImage = widget.template.preview;
         _loading = false;
       });
-    } catch (e) {
-      print('Error loading PDF: $e');
-      setState(() => _loading = false);
     }
   }
 
@@ -306,7 +346,12 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
           _loading
               ? const Center(child: CircularProgressIndicator())
               : _pageImage != null
-              ? Image.memory(_pageImage!.bytes)
+              ? Image.memory(
+                _pageImage!.bytes,
+                scale: 1,
+                filterQuality: FilterQuality.high,
+                isAntiAlias: true,
+              )
               : const Center(child: Icon(Icons.picture_as_pdf, size: 40)),
     );
   }

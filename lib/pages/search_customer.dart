@@ -23,7 +23,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   PdfControllerPinch? _pdfController;
   Uint8List? _pdfBytes;
   final TextEditingController _searchController = TextEditingController();
-  double leftFraction = 0.6;
+  double leftFraction = 0.5;
   final DataLogic api = DataLogic();
   final TemplateLogic tempApi = TemplateLogic();
 
@@ -152,35 +152,6 @@ class _SearchCustomerState extends State<SearchCustomer> {
         isLoadingPdf = false;
       });
     }
-    // try {
-    //           final bytes = await _loadPdf();
-    //           final pdfBytes = await api.fillData(
-    //             templateId: widget.template!.id,
-    //             customerId: widget.uid,
-    //             fileBytes: bytes!,
-    //             dataId: id,
-    //           );
-    //           if (pdfBytes != null && mounted) {
-    //             setState(() {
-    //               _pdfController?.dispose();
-    //               _pdfController = PdfControllerPinch(
-    //                 document: PdfDocument.openData(pdfBytes),
-    //               );
-                  
-    //             });
-    //           } else {
-    //             ScaffoldMessenger.of(context).showSnackBar(
-    //               const SnackBar(content: Text('Failed to load PDF')),
-    //             );
-    //           }
-    //         } catch (e) {
-    //           print('Error loading PDF: $e');
-    //           ScaffoldMessenger.of(context).showSnackBar(
-    //             SnackBar(content: Text('Error loading PDF: $e')),
-    //           );
-    //         } finally {
-    //           Navigator.of(context).pop();
-    //         }
   }
 
   @override
@@ -334,7 +305,6 @@ class _SearchCustomerState extends State<SearchCustomer> {
     );
   }
 
-
   Widget _buildCustomerList() {
     if (filteredCustomers.isEmpty) {
       return const Center(child: Text('No customers found'));
@@ -355,22 +325,14 @@ class _SearchCustomerState extends State<SearchCustomer> {
         final updatedAt = customer['updatedAt'] ?? 'N/A';
 
         return GestureDetector(
-          onTap: () async {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const Center(child: CircularProgressIndicator()),
-            );
-
+          onTap: () {
             try {
-              await _loadFilledPdf(id is int ? id : int.tryParse(id) ?? 0);
+              _loadFilledPdf(id);
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error loading PDF: $e')),
-              );
-            } finally {
-              if (mounted) Navigator.of(context).pop();
-            }
+              setState(() {
+                errorMessagePDF = "Error loading PDF: $e";
+              });
+            } 
           },
           child: Card(
             elevation: 2,
