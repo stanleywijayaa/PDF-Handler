@@ -1,13 +1,12 @@
 import 'dart:math';
-import 'package:flutter/services.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:pdf_handler/model/field.dart';
 import 'package:pdf_handler/model/table.dart';
 import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/template.dart';
-import 'package:internet_file/internet_file.dart';
 import 'package:pdf_handler/services/data_logic.dart';
 import 'package:pdf_handler/pages/search_customer.dart';
 
@@ -37,6 +36,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   int pdfTotalPage = 1;
   double pdfWidth = 0, pdfHeight = 0;
   bool isLoading = true;
+  Template? finishedTemplate;
   final GlobalKey pdfAreaKey = GlobalKey();
   final List<Field> _placedComponents = [];
 
@@ -562,24 +562,36 @@ class _CreateTemplateState extends State<CreateTemplate> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    if (_saved)
+                    if (_saved && finishedTemplate != null)
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => SearchCustomer(
-                                    template: Template(
-                                      //⚠️Change to created template⚠️//
-                                      id: 2,
-                                      title: 'ABC',
-                                      tableName: 'product',
-                                      fileSize: 123456,
-                                    ),
-                                    uid: widget.uid,
-                                  ),
+                          showGeneralDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            barrierLabel: '',
+                            barrierColor: Colors.black54,
+                            transitionDuration: const Duration(
+                              milliseconds: 180,
                             ),
+                            pageBuilder: (context, anim1, anim2) {
+                              return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(48),
+                                  child: Container(
+                                    color: const Color.fromARGB(
+                                      255,
+                                      255,
+                                      255,
+                                      255,
+                                    ),
+                                    child: SearchCustomer(
+                                      template: finishedTemplate,
+                                      uid: widget.uid,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                         style: ElevatedButton.styleFrom(
