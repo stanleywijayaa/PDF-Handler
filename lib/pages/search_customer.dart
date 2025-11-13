@@ -23,7 +23,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   PdfControllerPinch? _pdfController;
   Uint8List? _pdfBytes;
   final TextEditingController _searchController = TextEditingController();
-  double leftFraction = 0.6;
+  double leftFraction = 0.5;
   final DataLogic api = DataLogic();
   final TemplateLogic tempApi = TemplateLogic();
 
@@ -305,20 +305,6 @@ class _SearchCustomerState extends State<SearchCustomer> {
     );
   }
 
-  Future<void> _handlePdfLoad(int id) async {
-    try {
-      await _loadFilledPdf(id);
-    } catch (e) {
-      setState(() {
-        errorMessagePDF = "Error loading PDF: $e";
-      });
-    } finally {
-      // ignore: use_build_context_synchronously
-      if (Navigator.canPop(context)) Navigator.pop(context);
-    }
-  }
-
-
   Widget _buildCustomerList() {
     if (filteredCustomers.isEmpty) {
       return const Center(child: Text('No customers found'));
@@ -340,12 +326,13 @@ class _SearchCustomerState extends State<SearchCustomer> {
 
         return GestureDetector(
           onTap: () {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const Center(child: CircularProgressIndicator()),
-            );
-            _handlePdfLoad(id);
+            try {
+              _loadFilledPdf(id);
+            } catch (e) {
+              setState(() {
+                errorMessagePDF = "Error loading PDF: $e";
+              });
+            } 
           },
           child: Card(
             elevation: 2,
