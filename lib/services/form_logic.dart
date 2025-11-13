@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/model/field.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:pdf_handler/model/template.dart';
 
 class FormLogic{
   final String templateName;
@@ -21,7 +22,7 @@ class FormLogic{
     required this.pdfHeight,
   });
 
-  Future<void> exportTemplate(BuildContext context) async {
+  Future<Map<String, dynamic>?> exportTemplate(BuildContext context) async {
     try {
       //Convert coordinates
       final formFields = convertFieldsToPdfCoords();
@@ -46,10 +47,22 @@ class FormLogic{
           const SnackBar(content: Text("Template exported successfully!")),
         );
         debugPrint("Exported JSON: ${jsonEncode(payload)}");
+        final id = response.headers['X-File-ID'];
+        final title = response.headers['X-File-title'];
+        final tableName = response.headers['X-File-table_name'];
+        final fileSize = response.headers['X-File-size'];
+        if (id == null|| title == null || tableName == null || fileSize == null ) return null;
+        return {
+          'id': int.parse(id),
+          'title': title,
+          'tableName': tableName,
+          'fileSize': fileSize
+        };
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to export: ${response.body}")),
         );
+        return null;
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
