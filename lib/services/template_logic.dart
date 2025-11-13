@@ -28,7 +28,7 @@ class TemplateLogic {
 
   Future<Uint8List?> getTemplate({required int templateId}) async {
     final response = await http.get(
-      Uri.parse('$nodeURL/templates/getUrl?templateId=$templateId'),
+      Uri.parse('$nodeURL/templates/getFile?templateId=$templateId'),
     );
     if (response.statusCode == 200) {
       final data = response.bodyBytes;
