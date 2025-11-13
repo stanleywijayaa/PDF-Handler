@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pdf_handler/pages/login_page.dart';
 import 'package:pdf_handler/pages/select_template.dart';
 import 'package:pdf_handler/pages/create_template.dart';
 
@@ -12,22 +13,68 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Main Page Logged in as user: $nickname with id: $uid'),
-      ),
-      body: Column(
-        children: [
-          Text(
-            'Select Template',
-            style: GoogleFonts.nunito(
-              fontSize: 32,
-              fontWeight: FontWeight.w600,
-              color: const Color.fromARGB(255, 46, 46, 46),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.2,
+              child: Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(Icons.account_circle),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(nickname),
+                      Text(
+                        'ID: ${uid.toString()}',
+                        style: TextStyle(fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
+            Expanded(
+              child: Text(
+                textAlign: TextAlign.center,
+                'PDF Template Manager',
+                style: GoogleFonts.nunito(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w600,
+                  color: const Color.fromARGB(255, 46, 46, 46),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.2,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  onPressed:
+                      () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      ),
+                  icon: Icon(Icons.logout),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _button(context, "Create Template", CreateTemplate(uid: uid)),
+              _button(context, "Search Template", SelectTemplate(uid: uid)),
+            ],
           ),
-          const SizedBox(height: 10),
-          _button(context, "Create Template Page", CreateTemplate(uid: uid)),
-          _button(context, "Search Template Page", SelectTemplate(uid: uid)),
-        ],
+        ),
       ),
     );
   }

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'main_page.dart';
 
-class LoginPage extends StatefulWidget{
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -38,22 +38,27 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Login',
+                  'Account Login',
                   style: TextStyle(
                     fontSize: 26,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w400,
+                    color: Color.fromARGB(255, 0, 0, 0),
                   ),
                 ),
                 const SizedBox(height: 24),
-          
+
                 //  TextBox
                 TextField(
+                  style: TextStyle(color: Colors.black),
                   controller: usernameController,
                   decoration: InputDecoration(
                     labelText: 'Username',
                     prefixIcon: const Icon(Icons.email),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Color.fromARGB(255, 46, 119, 144), width: 2.0),
+                      borderSide: BorderSide(
+                        color: Color.fromARGB(255, 1, 121, 161),
+                        width: 2.0,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     border: OutlineInputBorder(
@@ -64,16 +69,20 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-          
+
                 // Password TextBox
                 TextField(
+                  style: TextStyle(color: Colors.black),
                   controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Color.fromARGB(255, 46, 119, 144), width: 2.0),
+                      borderSide: BorderSide(
+                        color: Color.fromARGB(255, 1, 121, 161),
+                        width: 2.0,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     border: OutlineInputBorder(
@@ -84,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-          
+
                 // Login Button
                 SizedBox(
                   width: double.infinity,
@@ -99,7 +108,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: const Text(
                       'Login',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
                     ),
                   ),
                 ),
@@ -110,64 +122,63 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-  void login() async{
+
+  void login() async {
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both username and password")),
+        const SnackBar(
+          content: Text("Please enter both username and password"),
+        ),
       );
       return;
     }
 
-    //loading 
+    //loading
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
     try {
       final response = await http.post(
         Uri.parse('${dotenv.env['NODE_URL']}/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'account': username,
-          'password': password,
-        }),
+        body: jsonEncode({'account': username, 'password': password}),
       );
-      
+
       if (!mounted) return;
       Navigator.pop(context);
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         //Success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login successful!")),
-        );
-      
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Login successful!")));
+
         if (!mounted) return;
-        Navigator.pushReplacement( 
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MainPage(nickname: data['nickname'], uid: data['id']),
+            builder:
+                (context) =>
+                    MainPage(nickname: data['nickname'], uid: data['id']),
           ),
         );
-      }else {
-          final error = jsonDecode(response.body);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error['message'] ?? "Invalid login")),
-          );
-        }
-    }catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      } else {
+        final error = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error['message'] ?? "Invalid login")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 }
-

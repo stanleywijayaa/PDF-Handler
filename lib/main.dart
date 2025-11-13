@@ -1,4 +1,5 @@
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pdf_handler/pages/login_page.dart';
 import 'package:pdf_handler/pages/main_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
@@ -59,15 +60,11 @@ class PDFHandler extends StatelessWidget {
             ),
           ),
         ),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 255, 255, 255),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE1E1E1)),
+        scaffoldBackgroundColor: const Color(0xFFE1E1E1),
         useMaterial3: true,
       ),
-      home: const MainPage(
-        nickname: 'bahligger',
-        uid: 2,
-      ), // ⚠️will change this to login page later⚠️.
+      home: const LoginPage(), // ⚠️will change this to login page later⚠️.
     );
   }
 }
