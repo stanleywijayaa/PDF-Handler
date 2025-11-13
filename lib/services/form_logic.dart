@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/model/field.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pdf_handler/model/template.dart';
+import 'package:pdf_handler/services/user_logic.dart';
 
 class FormLogic{
   final String templateName;
@@ -12,6 +16,8 @@ class FormLogic{
   final GlobalKey pdfAreaKey;
   final double pdfWidth;
   final double pdfHeight;
+  final int UID;
+  final Uint8List fileBytes;
 
   FormLogic({
     required this.templateName,
@@ -20,6 +26,8 @@ class FormLogic{
     required this.pdfAreaKey,
     required this.pdfWidth,
     required this.pdfHeight,
+    required this.UID,
+    required this.fileBytes,
   });
 
   Future<Map<String, dynamic>?> exportTemplate(BuildContext context) async {
@@ -27,40 +35,56 @@ class FormLogic{
       //Convert coordinates
       final formFields = convertFieldsToPdfCoords();
 
+      final nocoApp = await UserLogic.getNocoApp(UID);
+
       //Construct payload
-      final payload = {
+      final form = {
         "name": templateName,
         "table_name": tableName,
         "form_fields": formFields,
       };
 
       //Send to backend
-      final response = await http.post(
-        Uri.parse("${dotenv.env['NODE_URL']}/createpdf"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(payload),
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse("http://localhost:3000/createpdf"),
       );
 
+      request.fields['form'] = jsonEncode(form);
+      if (nocoApp == null) return null;
+      request.fields['nocoApp'] = nocoApp;
+      request.files.add(http.MultipartFile.fromBytes(
+        "pdf",
+        fileBytes,
+        filename: 'a.pdf',
+        contentType: MediaType('application', 'pdf')
+      ));
+
+      var response = await request.send();
+
+      final responseData = await http.Response.fromStream(response);
+
       //Handle result
-      if (response.statusCode == 200) {
+      if (responseData.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Template exported successfully!")),
         );
-        debugPrint("Exported JSON: ${jsonEncode(payload)}");
-        final id = response.headers['X-File-ID'];
-        final title = response.headers['X-File-title'];
-        final tableName = response.headers['X-File-table_name'];
-        final fileSize = response.headers['X-File-size'];
+        debugPrint("Exported JSON: ${jsonEncode(form)}");
+        final id = response.headers['x-file-id'];
+        final title = response.headers['x-file_title'];
+        final tableName = response.headers['x-file_table_name'];
+        final fileSize = response.headers['x-file_size'];
+        print('$id,$title,$tableName,$fileSize');
         if (id == null|| title == null || tableName == null || fileSize == null ) return null;
         return {
           'id': int.parse(id),
           'title': title,
           'tableName': tableName,
-          'fileSize': fileSize
+          'fileSize': int.parse(fileSize)
         };
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to export: ${response.body}")),
+          SnackBar(content: Text("Failed to export: ${responseData.statusCode} ${responseData.reasonPhrase}")),
         );
         return null;
       }
@@ -90,7 +114,7 @@ class FormLogic{
       return {
         "field": {
           "name": field.fieldName,
-          "pageNum": 0,
+          "pageNum": field.page,
           "x": pdfX,
           "y": pdfY,
           "width": field.width,
