@@ -275,8 +275,9 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
 
       // Render it to an image
       final pageImage = await page.render(
-        width: page.width,
-        height: page.height,
+        width: page.width / 2.5,
+        height: page.height / 2.5,
+        quality: 100,
         format: PdfPageImageFormat.png,
       );
 
@@ -288,7 +289,6 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
         _loading = false;
       });
     } catch (e) {
-      print('Error loading PDF: $e');
       setState(() => _loading = false);
     }
   }
@@ -306,7 +306,12 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
           _loading
               ? const Center(child: CircularProgressIndicator())
               : _pageImage != null
-              ? Image.memory(_pageImage!.bytes)
+              ? Image.memory(
+                _pageImage!.bytes,
+                scale: 1,
+                filterQuality: FilterQuality.high,
+                isAntiAlias: true,
+              )
               : const Center(child: Icon(Icons.picture_as_pdf, size: 40)),
     );
   }
