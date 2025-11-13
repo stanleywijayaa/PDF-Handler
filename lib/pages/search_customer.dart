@@ -114,6 +114,75 @@ class _SearchCustomerState extends State<SearchCustomer> {
     });
   }
 
+  Future<void> _loadFilledPdf(int dataId) async {
+    setState(() {
+      isLoadingPdf = true;
+      errorMessagePDF = null;
+    });
+    try {
+      final bytes = await _loadPdf();
+      if (bytes == null) {
+        throw Exception("Template bytes not found");
+      }
+
+      final pdfBytes = await api.fillData(
+        templateId: widget.template!.id,
+        customerId: widget.uid,
+        fileBytes: bytes,
+        dataId: dataId,
+      );
+
+      if (pdfBytes != null && mounted) {
+        setState(() {
+          _pdfController?.dispose();
+          _pdfController = PdfControllerPinch(
+            document: PdfDocument.openData(pdfBytes),
+          );
+          isLoadingPdf = false;
+        });
+      } else {
+        setState(() {
+          errorMessagePDF = "Failed to generate filled PDF";
+          isLoadingPdf = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessagePDF = e.toString();
+        isLoadingPdf = false;
+      });
+    }
+    // try {
+    //           final bytes = await _loadPdf();
+    //           final pdfBytes = await api.fillData(
+    //             templateId: widget.template!.id,
+    //             customerId: widget.uid,
+    //             fileBytes: bytes!,
+    //             dataId: id,
+    //           );
+    //           if (pdfBytes != null && mounted) {
+    //             setState(() {
+    //               _pdfController?.dispose();
+    //               _pdfController = PdfControllerPinch(
+    //                 document: PdfDocument.openData(pdfBytes),
+    //               );
+                  
+    //             });
+    //           } else {
+    //             ScaffoldMessenger.of(context).showSnackBar(
+    //               const SnackBar(content: Text('Failed to load PDF')),
+    //             );
+    //           }
+    //         } catch (e) {
+    //           print('Error loading PDF: $e');
+    //           ScaffoldMessenger.of(context).showSnackBar(
+    //             SnackBar(content: Text('Error loading PDF: $e')),
+    //           );
+    //         } finally {
+    //           Navigator.of(context).pop();
+    //         }
+  }
+
   @override
   void dispose() {
     _pdfController?.dispose();
@@ -128,168 +197,143 @@ class _SearchCustomerState extends State<SearchCustomer> {
         final leftWidth = (constraints.maxWidth - dividerWidth) * leftFraction;
         final rightWidth = (constraints.maxWidth - dividerWidth) * (1 - leftFraction);
 
-        return Row(
-          children: [
-            //LEFT SIDE
-            SizedBox(
-              width: leftWidth,
-              child: Container(
-                color: Colors.grey[200],
-                child: isLoadingPdf
-                  ? Center(child: CircularProgressIndicator())
-                  : errorMessagePDF != null
-                    ? Center(child: Text(errorMessagePDF!))
-                    : PdfViewPinch(controller: _pdfController!),
-                    // : LayoutBuilder(
-                    //   builder: (context, constraints) {
-                    //     final maxWidth = constraints.maxWidth;
-                    //     final singlePageWidth = 250.0;
-                    //     final pagesPerRow = (maxWidth / singlePageWidth).floor().clamp(1,10);
-                    //     final totalPages = _pdfController!.pagesCount;
-                    //     final rows = (totalPages! / pagesPerRow).ceil();
-                    //     return InteractiveViewer(
-                    //       panEnabled: true,
-                    //       scaleEnabled: true,
-                    //       minScale: 0.5,
-                    //       maxScale: 3.0,
-                    //       child: Column(
-                    //         children: List.generate(rows, (rowIndex) {
-                    //           final startPage = rowIndex * pagesPerRow + 1;
-                    //           final endPage = (startPage + pagesPerRow - 1).clamp(1, totalPages);
-                    //           return Row(
-                    //             mainAxisAlignment: MainAxisAlignment.center,
-                    //             children: [
-                    //               for (int pageNum = startPage; pageNum <= endPage; pageNum++)
-                    //               SizedBox(
-                    //                 width: maxWidth / pagesPerRow,
-                    //                 height: 400,
-                    //                 child: PdfViewPinch(
-                    //                   controller: _pdfController!,
-                    //                   initialPage: pageNum,
-                    //                 ),
-                    //               ),
-                    //             ],
-                    //           );
-                    //         })
-                    //       )
-                    //     );
-
-
-
-                    //   },
-                    // ),
-              ),
-            ),
-
-            // DRAGGABLE DIVIDER
-            StatefulBuilder(
-              builder: (context, localSetState) {
-                return GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onHorizontalDragUpdate: (details) {
-                    if (!mounted) return;
-                    setState(() {
-                      leftFraction += details.delta.dx / constraints.maxWidth;
-                      if (leftFraction < 0.2) leftFraction = 0.2;
-                      if (leftFraction > 0.8) leftFraction = 0.8;
-                    });
-                  },
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.resizeColumn,
-                    child: SizedBox(
-                      width: dividerWidth,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(child: Container(color: Colors.grey[200])),
-                              Expanded(child: Container(color: Colors.white)),
-                            ],
-                          ),
-                          Container(
-                            width: 1,
-                            color: Colors.grey.shade400,
-                          ),
-                          Container(
-                            width: 8,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade600,
-                              borderRadius: BorderRadius.circular(4),
+        return SizedBox(
+          height: constraints.maxHeight,
+          child: Row(
+            children: [
+              // LEFT SIDE
+              SizedBox(
+                width: leftWidth,
+                height: double.infinity,
+                child: Container(
+                  color: Colors.grey[200],
+                  child: isLoadingPdf
+                      ? const Center(child: CircularProgressIndicator())
+                      : (_pdfController != null)
+                          ? PdfViewPinch(controller: _pdfController!)
+                          : Center(
+                              child: Text(
+                                errorMessagePDF ?? 'No PDF loaded',
+                                style: const TextStyle(fontSize: 16),
+                              ),
                             ),
-                          ),
-                        ],
+                ),
+              ),
+
+              // DRAGGABLE DIVIDER
+              StatefulBuilder(
+                builder: (context, localSetState) {
+                  return GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragUpdate: (details) {
+                      if (!mounted) return;
+                      setState(() {
+                        leftFraction += details.delta.dx / constraints.maxWidth;
+                        if (leftFraction < 0.2) leftFraction = 0.2;
+                        if (leftFraction > 0.8) leftFraction = 0.8;
+                      });
+                    },
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.resizeColumn,
+                      child: SizedBox(
+                        width: dividerWidth,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(child: Container(color: Colors.grey[200])),
+                                Expanded(child: Container(color: Colors.white)),
+                              ],
+                            ),
+                            Container(
+                              width: 1,
+                              color: Colors.grey.shade400,
+                            ),
+                            Container(
+                              width: 8,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade600,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
 
-            //RIGHT SIDE
-            SizedBox(
-              width: rightWidth,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Material (
-                  color: Colors.transparent,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      //Title
-                      Text(
-                        "Search ${widget.template?.tableName ?? "Data"}",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)
-                      ),
-                      const SizedBox(height: 12),
-                      //Search Box
-                      TextField(
-                        controller: _searchController,
-                        style: const TextStyle(color: Colors.black),
-                        decoration: InputDecoration(
-                          hintText: "Enter ${widget.template?.tableName ?? "Data"} name / id",
-                          border: OutlineInputBorder(),
-                          suffixIcon: Icon(Icons.search),
+              // RIGHT SIDE
+              SizedBox(
+                width: rightWidth,
+                height: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title
+                        Text(
+                          "Search ${widget.template?.tableName ?? "Data"}",
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
-                        onSubmitted: _searchCustomers,
-                      ),
-                      const SizedBox(height: 20),
-                      //Placeholder for customer details
-                      Expanded(
-                        child: isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : errorMessage != null
-                            ? Center(child: Text("Error: $errorMessage"))
-                            :customers.isEmpty
-                              ? const Center(child: Text("No customers found"))
-                              : _buildCustomerList(),
-                      ),
-                      const SizedBox(height: 20),
-                      //Export button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: null,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                        const SizedBox(height: 12),
+                        // Search Box
+                        TextField(
+                          controller: _searchController,
+                          style: const TextStyle(color: Colors.black),
+                          decoration: InputDecoration(
+                            hintText:
+                                "Enter ${widget.template?.tableName ?? "Data"} name / id",
+                            border: const OutlineInputBorder(),
+                            suffixIcon: const Icon(Icons.search),
                           ),
-                          child: const Text(
-                            "Export PDF",
-                            style: TextStyle(fontSize: 16),
+                          onSubmitted: _searchCustomers,
+                        ),
+                        const SizedBox(height: 20),
+                        // Customer List
+                        Expanded(
+                          child: isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : errorMessage != null
+                                  ? Center(child: Text("Error: $errorMessage"))
+                                  : customers.isEmpty
+                                      ? const Center(child: Text("No customers found"))
+                                      : _buildCustomerList(),
+                        ),
+                        const SizedBox(height: 20),
+                        // Export button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: null,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: const Text(
+                              "Export PDF",
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
+
 
   Widget _buildCustomerList() {
     if (filteredCustomers.isEmpty) {
@@ -310,26 +354,45 @@ class _SearchCustomerState extends State<SearchCustomer> {
         final createdAt = customer['createdAt'] ?? 'N/A';
         final updatedAt = customer['updatedAt'] ?? 'N/A';
 
-        return Card(
-          elevation: 2,
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: ListTile(
-            leading: CircleAvatar(
-              child: Text(number.toString()),
+        return GestureDetector(
+          onTap: () async {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(child: CircularProgressIndicator()),
+            );
+
+            try {
+              await _loadFilledPdf(id is int ? id : int.tryParse(id) ?? 0);
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error loading PDF: $e')),
+              );
+            } finally {
+              if (mounted) Navigator.of(context).pop();
+            }
+          },
+          child: Card(
+            elevation: 2,
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-            title: Text(
-              nameValue.toString() + ("(ID: $id)"),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Created at: $createdAt'),
-                Text('Updated at: $updatedAt'),
-              ],
+            child: ListTile(
+              leading: CircleAvatar(
+                child: Text(number.toString()),
+              ),
+              title: Text(
+                nameValue.toString() + ("(ID: $id)"),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Created at: $createdAt'),
+                  Text('Updated at: $updatedAt'),
+                ],
+              ),
             ),
           ),
         );
