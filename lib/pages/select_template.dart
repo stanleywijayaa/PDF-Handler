@@ -230,7 +230,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                                             MainAxisAlignment.center,
                                         children: [
                                           PdfFirstPagePreview(
-                                            pdfId: template.id,
+                                            template: template,
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
@@ -272,8 +272,8 @@ class _SelectTemplateState extends State<SelectTemplate> {
 }
 
 class PdfFirstPagePreview extends StatefulWidget {
-  final int pdfId;
-  const PdfFirstPagePreview({super.key, required this.pdfId});
+  final Template template;
+  const PdfFirstPagePreview({super.key, required this.template});
 
   @override
   State<PdfFirstPagePreview> createState() => _PdfFirstPagePreviewState();
@@ -292,33 +292,46 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
   }
 
   Future<void> _loadFirstPage() async {
-    try {
-      // Open the document (from file, asset, or URL)
-      final bytes = await templateLogic.getTemplate(templateId: widget.pdfId);
-      if (bytes == null) throw Exception('Failed to get template');
-      final doc = await PdfDocument.openData(bytes);
-      final page = await doc.getPage(1);
+    if (widget.template.preview == null) {
+      print('rendering preview');
+      try {
+        // Open the document (from file, asset, or URL)
+        final bytes = await templateLogic.getTemplate(
+          templateId: widget.template.id,
+        );
+        if (bytes == null) throw Exception('Failed to get template');
+        final doc = await PdfDocument.openData(bytes);
+        final page = await doc.getPage(1);
 
-      // Render it to an image
-      final pageImage = await page.render(
-        width: page.width / 2.5,
-        height: page.height / 2.5,
-        quality: 100,
-        format: PdfPageImageFormat.png,
-      );
+        // Render it to an image
+        final pageImage = await page.render(
+          width: page.width / 2.5,
+          height: page.height / 2.5,
+          quality: 100,
+          format: PdfPageImageFormat.png,
+        );
 
-      await page.close();
+        widget.template.preview = pageImage;
 
-      if (!mounted) return;
+        await page.close();
 
+        if (!mounted) return;
+
+        setState(() {
+          _document = doc;
+          _pageImage = pageImage;
+          _loading = false;
+        });
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _loading = false);
+      }
+    } else {
+      print('using cached preview');
       setState(() {
-        _document = doc;
-        _pageImage = pageImage;
+        _pageImage = widget.template.preview;
         _loading = false;
       });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _loading = false);
     }
   }
 
