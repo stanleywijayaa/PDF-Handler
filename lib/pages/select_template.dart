@@ -18,6 +18,8 @@ class _SelectTemplateState extends State<SelectTemplate> {
   late ScrollController _scrollController;
   Template? selectedTemplate;
   late Future<List<Template>> _futureTemplates = Future.value([]);
+  late List<Template> _allTemplates = [];
+  List<Template> _displayedTemplates = [];
 
   @override
   void initState() {
@@ -41,6 +43,29 @@ class _SelectTemplateState extends State<SelectTemplate> {
       } else {
         _futureTemplates = TemplateLogic.fetchTemplate(nocoApp);
       }
+    });
+    _allTemplates = await _futureTemplates;
+    _displayedTemplates = _allTemplates;
+  }
+
+  void _searchTemplate(String value) {
+    if (value.isEmpty) {
+      setState(() {
+        _displayedTemplates = _allTemplates;
+      });
+    }
+    List<Template> filteredTemplates =
+        _allTemplates
+            .where(
+              (element) =>
+                  element.tableName.toLowerCase().contains(
+                    value.toLowerCase(),
+                  ) ||
+                  element.title.toLowerCase().contains(value.toLowerCase()),
+            )
+            .toList();
+    setState(() {
+      _displayedTemplates = filteredTemplates;
     });
   }
 
@@ -83,6 +108,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                   ),
                   SizedBox(height: 12),
                   TextFormField(
+                    onChanged: (value) => _searchTemplate(value),
                     style: GoogleFonts.nunito(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -126,7 +152,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                           );
                         }
 
-                        final templates = snapshot.data!;
+                        final templates = _displayedTemplates;
 
                         return LayoutBuilder(
                           builder: (context, constraints) {
@@ -283,12 +309,15 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
 
       await page.close();
 
+      if (!mounted) return;
+
       setState(() {
         _document = doc;
         _pageImage = pageImage;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loading = false);
     }
   }
