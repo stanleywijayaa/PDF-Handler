@@ -293,7 +293,6 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
 
   Future<void> _loadFirstPage() async {
     if (widget.template.preview == null) {
-      print('rendering preview');
       try {
         // Open the document (from file, asset, or URL)
         final bytes = await templateLogic.getTemplate(
@@ -327,7 +326,6 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
         setState(() => _loading = false);
       }
     } else {
-      print('using cached preview');
       setState(() {
         _pageImage = widget.template.preview;
         _loading = false;
