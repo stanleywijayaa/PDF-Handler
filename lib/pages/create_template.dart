@@ -70,12 +70,19 @@ class _CreateTemplateState extends State<CreateTemplate> {
       allowedExtensions: ['pdf'],
     );
     if (result != null && result.files.isNotEmpty) {
-      fileBytes = Uint8List.fromList(result.files.first.bytes!.toList()); // file content
-      String fileName = result.files.first.name; // file name
+      fileBytes = Uint8List.fromList(
+        result.files.first.bytes!.toList(),
+      ); // file content
+      String fileName = result.files.first.name.replaceAll(
+        RegExp(r'\.[^\/.]+$'),
+        '',
+      );
 
       // If you want to load it into PdfControllerPinch:
       _pdfController = PdfControllerPinch(
-        document: PdfDocument.openData(Uint8List.fromList(result.files.first.bytes!.toList())),
+        document: PdfDocument.openData(
+          Uint8List.fromList(result.files.first.bytes!.toList()),
+        ),
       );
 
       setState(() {
@@ -115,7 +122,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
           x: const Offset(100, 100).dx,
           y: const Offset(100, 100).dy,
           width: 100,
-          height: 40
+          height: 12,
         ),
       );
     });
@@ -168,11 +175,16 @@ class _CreateTemplateState extends State<CreateTemplate> {
     print(rawFinishedTemplate);
     if (rawFinishedTemplate != null) {
       setState(() {
-        finishedTemplate = Template(id: rawFinishedTemplate['id'], title: rawFinishedTemplate['title'], tableName: rawFinishedTemplate['tableName'], fileSize: rawFinishedTemplate['fileSize']);
+        finishedTemplate = Template(
+          id: rawFinishedTemplate['id'],
+          title: rawFinishedTemplate['title'],
+          tableName: rawFinishedTemplate['tableName'],
+          fileSize: rawFinishedTemplate['fileSize'],
+        );
         if (finishedTemplate != null) _saved = true;
       });
     } // close dialog
-    
+
     if (context.mounted) Navigator.pop(context);
   }
 
@@ -399,7 +411,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                             color: Color.fromARGB(255, 100, 100, 100),
                             child: PdfViewPinch(
                               onDocumentLoaded:
-                                  (document) => setState((){
+                                  (document) => setState(() {
                                     pdfTotalPage = document.pagesCount;
                                     _setPageData(document);
                                   }),
@@ -770,8 +782,12 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () => _exportFinishedTemplate(context, dialogController.text),
-                                        child: const Text(
+                          onPressed:
+                              () => _exportFinishedTemplate(
+                                context,
+                                dialogController.text,
+                              ),
+                          child: const Text(
                             "Save",
                             style: TextStyle(color: Colors.white),
                           ),
