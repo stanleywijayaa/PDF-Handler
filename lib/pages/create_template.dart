@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:pdf_handler/services/form_logic.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -68,16 +69,15 @@ class _CreateTemplateState extends State<CreateTemplate> {
     if (result != null && result.files.isNotEmpty) {
       Uint8List? fileBytes = result.files.first.bytes; // file content
       String fileName = result.files.first.name; // file name
-      print('Picked file: $fileName');
 
       // If you want to load it into PdfControllerPinch:
       _pdfController = PdfControllerPinch(
         document: PdfDocument.openData(fileBytes!),
       );
 
-      setState(() {});
-    } else {
-      print('User canceled the picker');
+      setState(() {
+        _controller.text = fileName;
+      });
     }
   }
 
@@ -732,13 +732,30 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            if (mounted) {
-                              setState(() {
-                                _controller.text = dialogController.text;
-                              });
-                            }
-                          },
+                          onPressed: () async {
+              final name = dialogController.text.trim();
+
+              if (name.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please enter a template name")),
+                );
+                return;
+              }
+
+              // ✅ Build your export logic here
+              final formLogic = FormLogic(
+                templateName: name,
+                tableName: selectedTable!.tableName, // whatever table user picked
+                placedComponents: _placedComponents, // your draggable items
+                pdfAreaKey: pdfAreaKey,
+                pdfWidth: pdfWidth,
+                pdfHeight: pdfHeight,
+              );
+
+              await formLogic.exportTemplate(context);
+
+              if (context.mounted) Navigator.pop(context); // close dialog
+            },
                           child: const Text(
                             "Save",
                             style: TextStyle(color: Colors.white),
