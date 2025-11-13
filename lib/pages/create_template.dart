@@ -42,6 +42,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   int? _savedPdfId;
   final GlobalKey pdfAreaKey = GlobalKey();
   final List<Field> _placedComponents = [];
+  late Uint8List fileBytes;
 
   @override
   void initState() {
@@ -69,12 +70,12 @@ class _CreateTemplateState extends State<CreateTemplate> {
       allowedExtensions: ['pdf'],
     );
     if (result != null && result.files.isNotEmpty) {
-      Uint8List? fileBytes = result.files.first.bytes; // file content
+      fileBytes = Uint8List.fromList(result.files.first.bytes!.toList()); // file content
       String fileName = result.files.first.name; // file name
 
       // If you want to load it into PdfControllerPinch:
       _pdfController = PdfControllerPinch(
-        document: PdfDocument.openData(fileBytes!),
+        document: PdfDocument.openData(Uint8List.fromList(result.files.first.bytes!.toList())),
       );
 
       setState(() {
@@ -110,8 +111,11 @@ class _CreateTemplateState extends State<CreateTemplate> {
           type: selectedComponent,
           fieldName: selectedField!.fieldName,
           dataField: selectedField!.dataField,
+          page: selectedField!.page - 1,
           x: const Offset(100, 100).dx,
           y: const Offset(100, 100).dy,
+          width: 100,
+          height: 40
         ),
       );
     });
@@ -138,6 +142,38 @@ class _CreateTemplateState extends State<CreateTemplate> {
         _addDraggableComponent();
       }
     });
+  }
+
+  void _exportFinishedTemplate(BuildContext context, String name) async {
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a template name")),
+      );
+      return;
+    }
+
+    // ✅ Build your export logic here
+    final formLogic = FormLogic(
+      templateName: name.trim(),
+      tableName: selectedTable!.tableName, // whatever table user picked
+      placedComponents: _placedComponents, // your draggable items
+      pdfAreaKey: pdfAreaKey,
+      pdfWidth: pdfWidth,
+      pdfHeight: pdfHeight,
+      UID: widget.uid,
+      fileBytes: Uint8List.fromList(fileBytes.toList()),
+    );
+
+    final rawFinishedTemplate = await formLogic.exportTemplate(context);
+    print(rawFinishedTemplate);
+    if (rawFinishedTemplate != null) {
+      setState(() {
+        finishedTemplate = Template(id: rawFinishedTemplate['id'], title: rawFinishedTemplate['title'], tableName: rawFinishedTemplate['tableName'], fileSize: rawFinishedTemplate['fileSize']);
+        if (finishedTemplate != null) _saved = true;
+      });
+    } // close dialog
+    
+    if (context.mounted) Navigator.pop(context);
   }
 
   void _setPageData(PdfDocument document) async {
@@ -363,7 +399,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                             color: Color.fromARGB(255, 100, 100, 100),
                             child: PdfViewPinch(
                               onDocumentLoaded:
-                                  (document) => setState(() async {
+                                  (document) => setState((){
                                     pdfTotalPage = document.pagesCount;
                                     _setPageData(document);
                                   }),
@@ -734,36 +770,8 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () async {
-              final name = dialogController.text.trim();
-
-              if (name.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please enter a template name")),
-                );
-                return;
-              }
-
-              // ✅ Build your export logic here
-              final formLogic = FormLogic(
-                templateName: name,
-                tableName: selectedTable!.tableName, // whatever table user picked
-                placedComponents: _placedComponents, // your draggable items
-                pdfAreaKey: pdfAreaKey,
-                pdfWidth: pdfWidth,
-                pdfHeight: pdfHeight,
-              );
-
-              final rawFinishedTemplate = await formLogic.exportTemplate(context);
-              if (rawFinishedTemplate != null) {
-                setState(() {
-                  finishedTemplate = Template(id: rawFinishedTemplate['id'], title: rawFinishedTemplate['title'], tableName: rawFinishedTemplate['tableName'], fileSize: rawFinishedTemplate['fileSize']);
-                });
-              }
-
-              if (context.mounted) Navigator.pop(context); // close dialog
-            },
-                          child: const Text(
+                          onPressed: () => _exportFinishedTemplate(context, dialogController.text),
+                                        child: const Text(
                             "Save",
                             style: TextStyle(color: Colors.white),
                           ),
