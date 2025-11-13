@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pdf_handler/services/form_logic.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   double pdfWidth = 0, pdfHeight = 0;
   bool isLoading = true;
   Template? finishedTemplate;
+  int? _savedPdfId;
   final GlobalKey pdfAreaKey = GlobalKey();
   final List<Field> _placedComponents = [];
 
@@ -752,7 +754,12 @@ class _CreateTemplateState extends State<CreateTemplate> {
                 pdfHeight: pdfHeight,
               );
 
-              await formLogic.exportTemplate(context);
+              final rawFinishedTemplate = await formLogic.exportTemplate(context);
+              if (rawFinishedTemplate != null) {
+                setState(() {
+                  finishedTemplate = Template(id: rawFinishedTemplate['id'], title: rawFinishedTemplate['title'], tableName: rawFinishedTemplate['tableName'], fileSize: rawFinishedTemplate['fileSize']);
+                });
+              }
 
               if (context.mounted) Navigator.pop(context); // close dialog
             },
