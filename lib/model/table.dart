@@ -28,10 +28,10 @@ class TableModel {
     if (rawSchema['data'] is! List) {
       throw Exception('Invalid table schema received');
     }
-    final schemaList =
-        rawSchema['data'].map<Schema>((item) {
-          return Schema.fromJson(item as Map<String, dynamic>);
-        }).toList();
+    final schemaList = (rawSchema['data'] as List)
+      .map<Schema>((item) => Schema.fromJson(item))
+      .toList();
+
     schema = schemaList;
   }
 }

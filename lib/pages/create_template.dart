@@ -141,11 +141,13 @@ class _CreateTemplateState extends State<CreateTemplate> {
             .then((_) => selectedTable!.schema);
         tableTitle = selectedTable!.title;
       } else if (item is Schema) {
-        selectedField = Field(
-          type: selectedComponent,
-          fieldName: item.title,
-          dataField: item.fieldName,
-        );
+        if (item.childSchema == null || item.childSchema!.isEmpty) {
+          selectedField = Field(
+            type: selectedComponent,
+            fieldName: item.title,
+            dataField: item.fieldName,
+          );
+        }
         _addDraggableComponent();
       }
     });
@@ -574,18 +576,56 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           } else {
                             titleText = item.toString();
                           }
-                          return Card(
-                            clipBehavior: Clip.antiAlias,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.all(
-                                Radius.circular(8),
+                          if (item is Schema && item.childSchema != null && item.childSchema!.isNotEmpty) {
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              clipBehavior: Clip.antiAlias,
+                              color: _selectedData == item
+                                ? Colors.blue
+                                : const Color.fromARGB(255, 240, 240, 240),
+                              child: ExpansionTile(
+                                title: Text(
+                                  titleText,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: _selectedData == item ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                                backgroundColor: _selectedData == item
+                                  ? Colors.blue
+                                  : const Color.fromARGB(255, 240, 240, 240),
+                                onExpansionChanged: (_) {},
+                                children: [
+                                  ...item.childSchema!.map((child) {
+                                    final isSelected = _selectedData == child;
+                                    return Container (
+                                      color: isSelected ? Colors.blue : Colors.transparent,
+                                      child: ListTile(
+                                        title: Text(
+                                          child.title,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: isSelected ? Colors.white: Colors.black,
+                                          ),
+                                        ),
+                                        tileColor: isSelected ? Colors.blue : null,
+                                        onTap: () => _selectItem(child),
+                                      ),
+                                    );
+                                  }),
+                                ],
                               ),
-                            ),
+                            );
+                          }
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            clipBehavior: Clip.antiAlias,
                             color:
                                 _selectedData == item
                                     ? Colors.blue
                                     : const Color.fromARGB(255, 240, 240, 240),
-                            margin: EdgeInsets.symmetric(vertical: 4),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(8),
                               onTap: () => _selectItem(item),
