@@ -146,6 +146,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
             type: selectedComponent,
             fieldName: item.title,
             dataField: item.fieldName,
+            page: pdfPageNum,
           );
         }
         _addDraggableComponent();
