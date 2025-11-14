@@ -146,27 +146,52 @@ class _SearchCustomerState extends State<SearchCustomer> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Truncated Fields'),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                title: const Text(
+                  'Truncated Fields',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 content: SizedBox(
                   width: double.minPositive,
-                  child: SizedBox(
-                    height: 200,
-                    child: ListView.builder(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxHeight: 300, // limit height for long lists
+                    ),
+                    child: ListView.separated(
+                      shrinkWrap: true,
                       itemCount: truncatedFields.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
                       itemBuilder: (context, index) {
-                        return Card(
-                          child: Row(
-                            children: [
-                              Text('${index + 1}.'),
-                              SizedBox(width: 10),
-                              Text(truncatedFields[index]),
-                            ],
+                        final field = truncatedFields[index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            radius: 12,
+                            backgroundColor: Colors.black,
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            field,
+                            style: const TextStyle(fontSize: 14),
                           ),
                         );
                       },
                     ),
                   ),
                 ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Close'),
+                  ),
+                ],
               );
             },
           );
