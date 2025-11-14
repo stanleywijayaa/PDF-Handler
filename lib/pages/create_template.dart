@@ -78,14 +78,12 @@ class _CreateTemplateState extends State<CreateTemplate> {
         '',
       );
 
-      // If you want to load it into PdfControllerPinch:
-      _pdfController = PdfControllerPinch(
-        document: PdfDocument.openData(
-          Uint8List.fromList(result.files.first.bytes!.toList()),
-        ),
-      );
-
       setState(() {
+        _pdfController = PdfControllerPinch(
+          document: PdfDocument.openData(
+            Uint8List.fromList(result.files.first.bytes!.toList()),
+          ),
+        );
         _controller.text = fileName;
       });
     }
@@ -175,7 +173,6 @@ class _CreateTemplateState extends State<CreateTemplate> {
     );
 
     final rawFinishedTemplate = await formLogic.exportTemplate(context);
-    print(rawFinishedTemplate);
     if (rawFinishedTemplate != null) {
       setState(() {
         finishedTemplate = Template(
@@ -577,40 +574,66 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           } else {
                             titleText = item.toString();
                           }
-                          if (item is Schema && item.childSchema != null && item.childSchema!.isNotEmpty) {
+                          if (item is Schema &&
+                              item.childSchema != null &&
+                              item.childSchema!.isNotEmpty) {
                             return Card(
                               margin: const EdgeInsets.symmetric(vertical: 4),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               clipBehavior: Clip.antiAlias,
-                              color: _selectedData == item
-                                ? Colors.blue
-                                : const Color.fromARGB(255, 240, 240, 240),
+                              color:
+                                  _selectedData == item
+                                      ? Colors.blue
+                                      : const Color.fromARGB(
+                                        255,
+                                        240,
+                                        240,
+                                        240,
+                                      ),
                               child: ExpansionTile(
                                 title: Text(
                                   titleText,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: _selectedData == item ? Colors.white : Colors.black,
+                                    color:
+                                        _selectedData == item
+                                            ? Colors.white
+                                            : Colors.black,
                                   ),
                                 ),
-                                backgroundColor: _selectedData == item
-                                  ? Colors.blue
-                                  : const Color.fromARGB(255, 240, 240, 240),
+                                backgroundColor:
+                                    _selectedData == item
+                                        ? Colors.blue
+                                        : const Color.fromARGB(
+                                          255,
+                                          240,
+                                          240,
+                                          240,
+                                        ),
                                 onExpansionChanged: (_) {},
                                 children: [
                                   ...item.childSchema!.map((child) {
                                     final isSelected = _selectedData == child;
-                                    return Container (
-                                      color: isSelected ? Colors.blue : Colors.transparent,
+                                    return Container(
+                                      color:
+                                          isSelected
+                                              ? Colors.blue
+                                              : Colors.transparent,
                                       child: ListTile(
                                         title: Text(
                                           child.title,
                                           style: TextStyle(
                                             fontSize: 13,
-                                            color: isSelected ? Colors.white: Colors.black,
+                                            color:
+                                                isSelected
+                                                    ? Colors.white
+                                                    : Colors.black,
                                           ),
                                         ),
-                                        tileColor: isSelected ? Colors.blue : null,
+                                        tileColor:
+                                            isSelected ? Colors.blue : null,
                                         onTap: () => _selectItem(child),
                                       ),
                                     );
@@ -621,7 +644,9 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           }
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 4),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             clipBehavior: Clip.antiAlias,
                             color:
                                 _selectedData == item

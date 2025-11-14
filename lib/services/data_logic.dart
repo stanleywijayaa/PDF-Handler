@@ -47,26 +47,25 @@ class DataLogic {
     return tablesList;
   }
 
-  Future<Uint8List?> fillData({
-    required int templateId, 
-    required int customerId, 
+  Future<Map<String, dynamic>> fillData({
+    required int templateId,
+    required int customerId,
     required Uint8List fileBytes,
     required int dataId,
   }) async {
-    final url = Uri.parse('$nodeURL/fillpdf?templateId=$templateId&customerId=$customerId&dataId=$dataId');
+    final url = Uri.parse(
+      '$nodeURL/fillpdf?templateId=$templateId&customerId=$customerId&dataId=$dataId',
+    );
     final request = http.MultipartRequest('POST', url);
     request.files.add(
-      http.MultipartFile.fromBytes(
-        'pdf',
-        fileBytes,
-        filename: 'data.pdf',
-      ),
+      http.MultipartFile.fromBytes('pdf', fileBytes, filename: 'data.pdf'),
     );
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
+    final truncatedFields = jsonDecode(response.headers['truncated-fields'] ?? "[]");
     if (response.statusCode == 200) {
       final data = response.bodyBytes;
-      return data;
+      return { 'pdf': data, 'truncated': truncatedFields };
     } else {
       //print('Error ${response.statusCode}: ${response.body}');
       throw Exception("Failed to fill PDF data");
