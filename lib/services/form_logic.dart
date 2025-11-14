@@ -109,7 +109,7 @@ class FormLogic{
     return placedComponents.map((field) {
       // field should contain label, dataField, and position (x, y)
       final double pdfX = field.x * scaleX;
-      final double pdfY = (widgetSize.height - field.y - field.height) * scaleY;
+      final double pdfY = (widgetSize.height - field.y + (field.height/2)) * scaleY;
 
       return {
         "field": {

@@ -122,7 +122,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
           x: const Offset(100, 100).dx,
           y: const Offset(100, 100).dy,
           width: 100,
-          height: 12,
+          height: 50,
         ),
       );
     });
