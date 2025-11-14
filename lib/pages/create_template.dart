@@ -21,7 +21,8 @@ class CreateTemplate extends StatefulWidget {
 }
 
 class _CreateTemplateState extends State<CreateTemplate> {
-  PdfControllerPinch? _pdfController;
+  PdfDocument? pdfDocument;
+  TransformationController? _transform;
   late TextEditingController _controller;
   final DataLogic dataLogic = DataLogic();
   final FocusNode _focusNode = FocusNode();
@@ -42,11 +43,13 @@ class _CreateTemplateState extends State<CreateTemplate> {
   int? _savedPdfId;
   final GlobalKey pdfAreaKey = GlobalKey();
   final List<Field> _placedComponents = [];
-  late Uint8List fileBytes;
+  Uint8List? fileBytes;
+  Uint8List? pageImage;
 
   @override
   void initState() {
     super.initState();
+    _transform = TransformationController();
     _controller = TextEditingController();
     _focusNode.addListener(() {
       setState(() {
@@ -58,7 +61,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
 
   @override
   void dispose() {
-    _pdfController?.dispose();
+    _transform?.dispose();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -77,14 +80,15 @@ class _CreateTemplateState extends State<CreateTemplate> {
         RegExp(r'\.[^\/.]+$'),
         '',
       );
+      pdfDocument = await PdfDocument.openData(
+        Uint8List.fromList(fileBytes!.toList()),
+      );
+      _loadPage(1);
 
       setState(() {
-        _pdfController = PdfControllerPinch(
-          document: PdfDocument.openData(
-            Uint8List.fromList(result.files.first.bytes!.toList()),
-          ),
-        );
+        if (!mounted) return;
         _controller.text = fileName;
+        pdfTotalPage = pdfDocument!.pagesCount;
       });
     }
   }
@@ -111,6 +115,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
     // }
 
     setState(() {
+      if (!mounted) return;
       _placedComponents.add(
         Field(
           type: selectedComponent,
@@ -128,6 +133,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
 
   void _selectItem(dynamic item) {
     setState(() {
+      if (!mounted) return;
       _selectedData = item;
       //print(item.toString());
 
@@ -169,12 +175,13 @@ class _CreateTemplateState extends State<CreateTemplate> {
       pdfWidth: pdfWidth,
       pdfHeight: pdfHeight,
       UID: widget.uid,
-      fileBytes: Uint8List.fromList(fileBytes.toList()),
+      fileBytes: Uint8List.fromList(fileBytes!.toList()),
     );
 
     final rawFinishedTemplate = await formLogic.exportTemplate(context);
     if (rawFinishedTemplate != null) {
       setState(() {
+        if (!mounted) return;
         finishedTemplate = Template(
           id: rawFinishedTemplate['id'],
           title: rawFinishedTemplate['title'],
@@ -188,14 +195,28 @@ class _CreateTemplateState extends State<CreateTemplate> {
     if (context.mounted) Navigator.pop(context);
   }
 
-  void _setPageData(PdfDocument document) async {
-    final page = await document.getPage(1);
-    setState(() {
-      isLoading = false;
-      pdfHeight = page.height;
-      pdfWidth = page.width;
-    });
+  void _loadPage(int pageNum) async {
+    if (pdfDocument == null) return;
+    setState(() => isLoading = true);
+
+    final page = await pdfDocument!.getPage(pageNum);
+    final rendered = await page.render(
+      width: page.width,
+      height: page.height,
+      format: PdfPageImageFormat.png,
+      quality: 100,
+    );
+
     page.close();
+
+    if (!mounted) return;
+    setState(() {
+      pageImage = rendered!.bytes;
+      pdfPageNum = pageNum;
+      pdfWidth = page.width.toDouble();
+      pdfHeight = page.height.toDouble();
+      isLoading = false;
+    });
   }
 
   void _selectAnotherTable() {
@@ -228,6 +249,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: () {
                   setState(() {
+                    if (!mounted) return;
                     _placedComponents.clear();
                     _selectedData = null;
                     selectedTable = null;
@@ -244,6 +266,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
       );
     } else {
       setState(() {
+        if (!mounted) return;
         _placedComponents.clear();
         _selectedData = null;
         selectedTable = null;
@@ -392,7 +415,12 @@ class _CreateTemplateState extends State<CreateTemplate> {
           Expanded(
             child: Column(
               children: [
-                _pdfController == null
+                IconButton(
+                  onPressed:
+                      pdfPageNum > 1 ? () => _loadPage(pdfPageNum - 1) : null,
+                  icon: Icon(Icons.arrow_upward),
+                ),
+                pageImage == null
                     ? Expanded(
                       child: Container(
                         width: double.infinity,
@@ -404,80 +432,91 @@ class _CreateTemplateState extends State<CreateTemplate> {
                       ),
                     )
                     : Expanded(
-                      child: Stack(
-                        key: pdfAreaKey,
-                        children: [
-                          Container(
-                            color: Color.fromARGB(255, 100, 100, 100),
-                            child: PdfViewPinch(
-                              onDocumentLoaded:
-                                  (document) => setState(() {
-                                    pdfTotalPage = document.pagesCount;
-                                    _setPageData(document);
+                      child: Center(
+                        child: InteractiveViewer(
+                          transformationController: _transform,
+                          constrained: false,
+                          child: Stack(
+                            alignment: AlignmentGeometry.center,
+                            key: pdfAreaKey,
+                            children: [
+                              if (pageImage != null)
+                                Center(child: Image.memory(pageImage!)),
+                              //Draggable overlay
+                              ..._placedComponents
+                                  .where(
+                                    (component) =>
+                                        component.page == pdfPageNum - 1,
+                                  )
+                                  .map((component) {
+                                    final matrix = _transform!.value;
+                                    final scaleX = matrix[0];
+                                    final scaleY = matrix[5];
+                                    final translateX = matrix[12];
+                                    final translateY = matrix[13];
+                                    return Positioned(
+                                      left: component.x * scaleX + translateX,
+                                      top: component.y * scaleY + translateY,
+                                      child: Draggable(
+                                        feedback: _buildDraggableBox(
+                                          component,
+                                          isDragging: true,
+                                        ),
+                                        childWhenDragging: Opacity(
+                                          opacity: 0.5,
+                                          child: _buildDraggableBox(component),
+                                        ),
+                                        child: _buildDraggableBox(component),
+                                        onDragEnd: (details) {
+                                          final RenderBox box =
+                                              pdfAreaKey.currentContext!
+                                                      .findRenderObject()
+                                                  as RenderBox;
+                                          final localOffset = box.globalToLocal(
+                                            details.offset,
+                                          );
+
+                                          // Convert back to PDF coordinates
+                                          final updatedX =
+                                              (localOffset.dx - translateX) /
+                                              scaleX;
+                                          final updatedY =
+                                              (localOffset.dy - translateY) /
+                                              scaleY;
+
+                                          setState(() {
+                                            final updated = component.copyWith(
+                                              x: updatedX,
+                                              y: updatedY,
+                                            );
+                                            final index = _placedComponents
+                                                .indexOf(component);
+                                            _placedComponents[index] = updated;
+                                          });
+                                        },
+                                      ),
+                                    );
                                   }),
-                              onPageChanged:
-                                  (page) => setState(() {
-                                    pdfPageNum = page;
-                                  }),
-                              onDocumentError:
-                                  (error) =>
-                                      Text('Error rendering pdf: $error'),
-                              padding: 10,
-                              maxScale: 1,
-                              minScale: 1,
-                              controller: _pdfController!,
-                              scrollDirection: Axis.vertical,
-                            ),
+                              if (isLoading)
+                                Container(
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                          //Draggable overlay
-                          ..._placedComponents.map((component) {
-                            return Positioned(
-                              left: component.x,
-                              top: component.y,
-                              child: Draggable(
-                                feedback: _buildDraggableBox(
-                                  component,
-                                  isDragging: true,
-                                ),
-                                childWhenDragging: Opacity(
-                                  opacity: 0.5,
-                                  child: _buildDraggableBox(component),
-                                ),
-                                child: _buildDraggableBox(component),
-                                onDragEnd: (details) {
-                                  final RenderBox box =
-                                      pdfAreaKey.currentContext!
-                                              .findRenderObject()
-                                          as RenderBox;
-                                  final localOffset = box.globalToLocal(
-                                    details.offset,
-                                  );
-                                  setState(() {
-                                    final updated = component.copyWith(
-                                      x: localOffset.dx,
-                                      y: localOffset.dy,
-                                    );
-                                    final index = _placedComponents.indexOf(
-                                      component,
-                                    );
-                                    _placedComponents[index] = updated;
-                                  });
-                                },
-                              ),
-                            );
-                          }),
-                          if (isLoading)
-                            Container(
-                              color: const Color.fromARGB(255, 100, 100, 100),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            ),
-                        ],
+                        ),
                       ),
                     ),
+                IconButton(
+                  onPressed:
+                      pdfPageNum < pdfTotalPage
+                          ? () => _loadPage(pdfPageNum + 1)
+                          : null,
+                  icon: Icon(Icons.arrow_downward),
+                ),
                 // ==== BOTTOM BAR (OPTIONAL PAGE INFO) ====
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -758,6 +797,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
       child: ElevatedButton(
         onPressed: () {
           setState(() {
+            if (!mounted) return;
             selectedComponent = label;
           });
         },
@@ -837,6 +877,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           onPressed: () {
                             if (mounted) {
                               setState(() {
+                                if (!mounted) return;
                                 _controller.text = dialogController.text;
                               });
                             }
