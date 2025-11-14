@@ -10,11 +10,7 @@ class SearchCustomer extends StatefulWidget {
   final Template? template;
   final int uid;
 
-  const SearchCustomer({
-    super.key, 
-    required this.template,
-    required this.uid,
-  });
+  const SearchCustomer({super.key, required this.template, required this.uid});
 
   @override
   State<SearchCustomer> createState() => _SearchCustomerState();
@@ -29,8 +25,8 @@ class _SearchCustomerState extends State<SearchCustomer> {
   final TextEditingController _searchController = TextEditingController();
   double leftFraction = 0.5;
 
-  List <Map<String, dynamic>> customers = [];
-  List <Map<String, dynamic>> filteredCustomers =[];
+  List<Map<String, dynamic>> customers = [];
+  List<Map<String, dynamic>> filteredCustomers = [];
   bool isLoading = false;
   bool isLoadingPdf = true;
   String? errorMessage;
@@ -53,24 +49,22 @@ class _SearchCustomerState extends State<SearchCustomer> {
         );
         setState(() => isLoadingPdf = false);
       } else {
-          setState(() {
-            errorMessagePDF = "Failed to load PDF";
-            isLoadingPdf = false;
-          });
-      }
-    } catch (e) {
         setState(() {
-          errorMessagePDF = e.toString();
+          errorMessagePDF = "Failed to load PDF";
           isLoadingPdf = false;
         });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessagePDF = e.toString();
+        isLoadingPdf = false;
+      });
     }
   }
 
   Future<Uint8List?> _loadPdf() async {
-      final url = await tempApi.getTemplate(
-        templateId: widget.template!.id
-      );
-      return url;
+    final url = await tempApi.getTemplate(templateId: widget.template!.id);
+    return url;
   }
 
   Future<void> _loadCustomers() async {
@@ -109,10 +103,11 @@ class _SearchCustomerState extends State<SearchCustomer> {
     final lowerQuery = query.toLowerCase();
 
     setState(() {
-      filteredCustomers = customers.where((customer) {
-        final combined = customer.values.join(' ').toLowerCase();
-        return combined.contains(lowerQuery);
-      }).toList();
+      filteredCustomers =
+          customers.where((customer) {
+            final combined = customer.values.join(' ').toLowerCase();
+            return combined.contains(lowerQuery);
+          }).toList();
     });
   }
 
@@ -127,12 +122,15 @@ class _SearchCustomerState extends State<SearchCustomer> {
         throw Exception("Template bytes not found");
       }
 
-      final pdfBytes = await api.fillData(
+      final pdf = await api.fillData(
         templateId: widget.template!.id,
         customerId: widget.uid,
         fileBytes: bytes,
         dataId: dataId,
       );
+
+      final pdfBytes = pdf['pdf'];
+      final truncatedFields = pdf['truncated'];
 
       if (pdfBytes != null && mounted) {
         setState(() {
@@ -143,6 +141,36 @@ class _SearchCustomerState extends State<SearchCustomer> {
           isLoadingPdf = false;
           pdfresult = Uint8List.fromList(pdfBytes);
         });
+        if (truncatedFields.isNotEmpty) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Truncated Fields'),
+                content: SizedBox(
+                  width: double.minPositive,
+                  child: SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      itemCount: truncatedFields.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          child: Row(
+                            children: [
+                              Text('${index + 1}.'),
+                              SizedBox(width: 10),
+                              Text(truncatedFields[index]),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        }
       } else {
         setState(() {
           errorMessagePDF = "Failed to generate filled PDF";
@@ -169,7 +197,8 @@ class _SearchCustomerState extends State<SearchCustomer> {
       builder: (context, constraints) {
         final dividerWidth = 20.0;
         final leftWidth = (constraints.maxWidth - dividerWidth) * leftFraction;
-        final rightWidth = (constraints.maxWidth - dividerWidth) * (1 - leftFraction);
+        final rightWidth =
+            (constraints.maxWidth - dividerWidth) * (1 - leftFraction);
 
         return SizedBox(
           height: constraints.maxHeight,
@@ -181,16 +210,17 @@ class _SearchCustomerState extends State<SearchCustomer> {
                 height: double.infinity,
                 child: Container(
                   color: Colors.grey[200],
-                  child: isLoadingPdf
-                      ? const Center(child: CircularProgressIndicator())
-                      : (_pdfControllerPinch != null)
+                  child:
+                      isLoadingPdf
+                          ? const Center(child: CircularProgressIndicator())
+                          : (_pdfControllerPinch != null)
                           ? PdfViewPinch(controller: _pdfControllerPinch!)
                           : Center(
-                              child: Text(
-                                errorMessagePDF ?? 'No PDF loaded',
-                                style: const TextStyle(fontSize: 16),
-                              ),
+                            child: Text(
+                              errorMessagePDF ?? 'No PDF loaded',
+                              style: const TextStyle(fontSize: 16),
                             ),
+                          ),
                 ),
               ),
 
@@ -216,14 +246,13 @@ class _SearchCustomerState extends State<SearchCustomer> {
                           children: [
                             Row(
                               children: [
-                                Expanded(child: Container(color: Colors.grey[200])),
+                                Expanded(
+                                  child: Container(color: Colors.grey[200]),
+                                ),
                                 Expanded(child: Container(color: Colors.white)),
                               ],
                             ),
-                            Container(
-                              width: 1,
-                              color: Colors.grey.shade400,
-                            ),
+                            Container(width: 1, color: Colors.grey.shade400),
                             Container(
                               width: 12,
                               height: 50,
@@ -233,15 +262,20 @@ class _SearchCustomerState extends State<SearchCustomer> {
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(3, (_) => Container(
-                                  width: 8,
-                                  height: 1,
-                                  margin: const EdgeInsets.symmetric(vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(1),
+                                children: List.generate(
+                                  3,
+                                  (_) => Container(
+                                    width: 8,
+                                    height: 1,
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(1),
+                                    ),
                                   ),
-                                )),
+                                ),
                               ),
                             ),
                           ],
@@ -267,7 +301,10 @@ class _SearchCustomerState extends State<SearchCustomer> {
                         Text(
                           "Search ${widget.template?.tableName ?? "Data"}",
                           style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         // Search Box
@@ -285,50 +322,66 @@ class _SearchCustomerState extends State<SearchCustomer> {
                         const SizedBox(height: 20),
                         // Customer List
                         Expanded(
-                          child: isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : errorMessage != null
+                          child:
+                              isLoading
+                                  ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                  : errorMessage != null
                                   ? Center(child: Text("Error: $errorMessage"))
                                   : customers.isEmpty
-                                      ? const Center(child: Text("No customers found"))
-                                      : _buildCustomerList(),
+                                  ? const Center(
+                                    child: Text("No customers found"),
+                                  )
+                                  : _buildCustomerList(),
                         ),
                         const SizedBox(height: 20),
                         // Export button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: (_pdfControllerPinch == null || pdfresult == null)
-                              ? null
-                              : () async {
-                                try {
-                                  await FileSaver.instance.saveFile(
-                                    name: 'downloaded',
-                                    bytes: pdfresult!,
-                                    fileExtension: 'pdf'
-                                  );
-                                } catch (e) {
-                                  // ignore: use_build_context_synchronously
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Failed to download PDF: $e')),
-                                  );
-                                }
-                              },
-                              style: ButtonStyle(
-                                padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 14)),
-                                foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                                  (states) {
+                            onPressed:
+                                (_pdfControllerPinch == null ||
+                                        pdfresult == null)
+                                    ? null
+                                    : () async {
+                                      try {
+                                        await FileSaver.instance.saveFile(
+                                          name: 'downloaded',
+                                          bytes: pdfresult!,
+                                          fileExtension: 'pdf',
+                                        );
+                                      } catch (e) {
+                                        // ignore: use_build_context_synchronously
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Failed to download PDF: $e',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                            style: ButtonStyle(
+                              padding: WidgetStateProperty.all(
+                                const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              foregroundColor:
+                                  WidgetStateProperty.resolveWith<Color>((
+                                    states,
+                                  ) {
                                     if (states.contains(WidgetState.disabled)) {
                                       return Colors.grey.shade400;
                                     }
                                     return Colors.white;
-                                  },
-                                ),
-                              ),
-                              child: const Text(
-                                "Download PDF",
-                                style: TextStyle(fontSize: 16),
-                              ),
+                                  }),
+                            ),
+                            child: const Text(
+                              "Download PDF",
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
                       ],
@@ -370,7 +423,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
               setState(() {
                 errorMessagePDF = "Error loading PDF: $e";
               });
-            } 
+            }
           },
           child: Card(
             elevation: 2,
@@ -379,9 +432,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: ListTile(
-              leading: CircleAvatar(
-                child: Text(number.toString()),
-              ),
+              leading: CircleAvatar(child: Text(number.toString())),
               title: Text(
                 nameValue.toString() + ("(ID: $id)"),
                 style: const TextStyle(fontWeight: FontWeight.bold),
