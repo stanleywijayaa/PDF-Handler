@@ -163,7 +163,6 @@ class _CreateTemplateState extends State<CreateTemplate> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter a template name")),
       );
-      return;
     }
 
     // ✅ Build your export logic here
@@ -770,16 +769,41 @@ class _CreateTemplateState extends State<CreateTemplate> {
                           ),
                         ),
                       ),
-                    ElevatedButton(
-                      onPressed: () => _showSaveDialog(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 44, 127, 11),
+                    if (pdfDocument != null && _placedComponents.isNotEmpty)
+                      ElevatedButton(
+                        onPressed: () => _showSaveDialog(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            44,
+                            127,
+                            11,
+                          ),
+                        ),
+                        child: const Text(
+                          "Save",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    else
+                      ElevatedButton(
+                        onPressed: null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            44,
+                            127,
+                            11,
+                          ),
+                          disabledBackgroundColor: Colors.grey[700],
+                        ),
+                        child: Text(
+                          "Save",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 190, 190, 190),
+                          ),
+                        ),
                       ),
-                      child: const Text(
-                        "Save",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 10),

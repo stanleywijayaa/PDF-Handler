@@ -9,7 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pdf_handler/model/template.dart';
 import 'package:pdf_handler/services/user_logic.dart';
 
-class FormLogic{
+class FormLogic {
   final String templateName;
   final String tableName;
   final List<Field> placedComponents;
@@ -53,12 +53,14 @@ class FormLogic{
       request.fields['form'] = jsonEncode(form);
       if (nocoApp == null) return null;
       request.fields['nocoApp'] = nocoApp;
-      request.files.add(http.MultipartFile.fromBytes(
-        "pdf",
-        fileBytes,
-        filename: 'a.pdf',
-        contentType: MediaType('application', 'pdf')
-      ));
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          "pdf",
+          fileBytes,
+          filename: 'a.pdf',
+          contentType: MediaType('application', 'pdf'),
+        ),
+      );
 
       var response = await request.send();
 
@@ -66,32 +68,36 @@ class FormLogic{
 
       //Handle result
       if (responseData.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Template exported successfully!")),
-        );
         debugPrint("Exported JSON: ${jsonEncode(form)}");
         final id = response.headers['x-file-id'];
         final title = response.headers['x-file_title'];
         final tableName = response.headers['x-file_table_name'];
         final fileSize = response.headers['x-file_size'];
-        print('$id,$title,$tableName,$fileSize');
-        if (id == null|| title == null || tableName == null || fileSize == null ) return null;
+        if (id == null ||
+            title == null ||
+            tableName == null ||
+            fileSize == null)
+          return null;
         return {
           'id': int.parse(id),
           'title': title,
           'tableName': tableName,
-          'fileSize': int.parse(fileSize)
+          'fileSize': int.parse(fileSize),
         };
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to export: ${responseData.statusCode} ${responseData.reasonPhrase}")),
+          SnackBar(
+            content: Text(
+              "Failed to export: ${responseData.statusCode} ${responseData.reasonPhrase}",
+            ),
+          ),
         );
         return null;
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error exporting: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error exporting: $e")));
     }
   }
 
@@ -109,7 +115,8 @@ class FormLogic{
     return placedComponents.map((field) {
       // field should contain label, dataField, and position (x, y)
       final double pdfX = field.x * scaleX;
-      final double pdfY = (widgetSize.height - field.y + (field.height/2)) * scaleY;
+      final double pdfY =
+          (widgetSize.height - field.y + (field.height / 2)) * scaleY;
 
       return {
         "field": {
