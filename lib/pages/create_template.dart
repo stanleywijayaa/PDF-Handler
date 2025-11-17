@@ -487,53 +487,41 @@ class _CreateTemplateState extends State<CreateTemplate> {
                                 Center(child: Image.memory(pageImage!)),
                               //Draggable overlay
                               ..._placedComponents
+                                  .asMap()
+                                  .entries
                                   .where(
-                                    (component) =>
-                                        component.page == pdfPageNum - 1,
+                                    (entry) =>
+                                        entry.value.page == pdfPageNum - 1,
                                   )
-                                  .map((component) {
+                                  .map((entry) {
+                                    final component = entry.value;
                                     final matrix = _transform!.value;
                                     final scaleX = matrix[0];
                                     final scaleY = matrix[5];
                                     final translateX = matrix[12];
                                     final translateY = matrix[13];
+                                    final index = entry.key;
                                     return Positioned(
                                       left: component.x * scaleX + translateX,
                                       top: component.y * scaleY + translateY,
-                                      child: Draggable(
-                                        feedback: _buildDraggableBox(
+                                      child: GestureDetector(
+                                        child: _buildDraggableBox(
                                           component,
-                                          isDragging: true,
+                                          index,
                                         ),
-                                        childWhenDragging: Opacity(
-                                          opacity: 0.5,
-                                          child: _buildDraggableBox(component),
-                                        ),
-                                        child: _buildDraggableBox(component),
-                                        onDragEnd: (details) {
-                                          final RenderBox box =
-                                              pdfAreaKey.currentContext!
-                                                      .findRenderObject()
-                                                  as RenderBox;
-                                          final localOffset = box.globalToLocal(
-                                            details.offset,
-                                          );
-
-                                          // Convert back to PDF coordinates
+                                        onPanUpdate: (details) {
                                           final updatedX =
-                                              (localOffset.dx - translateX) /
-                                              scaleX;
+                                              (component.x +
+                                                  details.delta.dx / scaleX);
                                           final updatedY =
-                                              (localOffset.dy - translateY) /
-                                              scaleY;
+                                              (component.y +
+                                                  details.delta.dy / scaleY);
 
                                           setState(() {
                                             final updated = component.copyWith(
                                               x: updatedX,
                                               y: updatedY,
                                             );
-                                            final index = _placedComponents
-                                                .indexOf(component);
                                             _placedComponents[index] = updated;
                                           });
                                         },
@@ -980,26 +968,50 @@ class _CreateTemplateState extends State<CreateTemplate> {
     );
   }
 
-  Widget _buildDraggableBox(Field field, {bool isDragging = false}) {
-    return Container(
-      width: 150,
-      height: 50,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color:
-              isDragging
-                  ? Colors.blue.withValues(alpha: 0.5)
-                  : const Color.fromARGB(255, 0, 122, 255),
-          width: 2,
+  Widget _buildDraggableBox(Field field, int index) {
+    return Stack(
+      children: [
+        Container(
+          width: field.width,
+          height: field.height,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: const Color.fromARGB(255, 0, 122, 255),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            field.fieldName,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.black, fontSize: 14),
+          ),
         ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        field.fieldName,
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.black, fontSize: 14),
-      ),
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              final matrix = _transform!.value;
+
+              final scaleX = matrix[0];
+              final scaleY = matrix[5];
+              setState(() {
+                _placedComponents[index] = field.copyWith(
+                  width: field.width + details.delta.dx / scaleX,
+                  height: field.height + details.delta.dy / scaleY,
+                );
+              });
+            },
+            child: Container(
+              width: 4,
+              height: 4,
+              decoration: const BoxDecoration(color: Colors.orange),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
