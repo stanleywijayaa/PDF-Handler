@@ -158,12 +158,20 @@ class _CreateTemplateState extends State<CreateTemplate> {
     });
   }
 
-  void _exportFinishedTemplate(BuildContext context, String name) async {
+  void _exportFinishedTemplate(BuildContext parentContext, String name) async {
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(parentContext).showSnackBar(
         const SnackBar(content: Text("Please enter a template name")),
       );
     }
+
+    showDialog(
+      context: parentContext,
+      barrierDismissible: false,
+      builder: (_) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
 
     // ✅ Build your export logic here
     final formLogic = FormLogic(
@@ -177,10 +185,12 @@ class _CreateTemplateState extends State<CreateTemplate> {
       fileBytes: Uint8List.fromList(fileBytes!.toList()),
     );
 
-    final rawFinishedTemplate = await formLogic.exportTemplate(context);
-    if (rawFinishedTemplate != null) {
+    final rawFinishedTemplate = await formLogic.exportTemplate(parentContext);
+    if (mounted && rawFinishedTemplate != null) {
       setState(() {
-        if (!mounted) return;
+        if (!mounted) {
+          return;
+        }
         finishedTemplate = Template(
           id: rawFinishedTemplate['id'],
           title: rawFinishedTemplate['title'],
@@ -190,8 +200,42 @@ class _CreateTemplateState extends State<CreateTemplate> {
         if (finishedTemplate != null) _saved = true;
       });
     } // close dialog
-
-    if (context.mounted) Navigator.pop(context);
+    if (parentContext.mounted) {
+      Navigator.of(parentContext, rootNavigator: true).pop();
+      Navigator.of(parentContext).pushReplacement(
+        DialogRoute(
+          context: parentContext,
+          builder:
+              (_) => Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Template exported successfully!",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed:
+                            () =>
+                                Navigator.of(
+                                  parentContext,
+                                  rootNavigator: true,
+                                ).pop(),
+                        child: const Text("OK"),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+        ),
+      );
+    }
   }
 
   void _loadPage(int pageNum) async {
@@ -843,6 +887,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
   }
 
   void _showSaveDialog(BuildContext context) {
+    final parentContext = context;
     final TextEditingController dialogController = TextEditingController();
     dialogController.text = _controller.text;
     final FocusNode dialogFocusNode = FocusNode();
@@ -915,7 +960,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
                         ElevatedButton(
                           onPressed:
                               () => _exportFinishedTemplate(
-                                context,
+                                parentContext,
                                 dialogController.text,
                               ),
                           child: const Text(
