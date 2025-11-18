@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf_handler/model/template.dart';
 import 'package:pdf_handler/pages/create_template.dart';
+import 'package:pdf_handler/pages/login_page.dart';
 import 'package:pdf_handler/pages/search_customer.dart';
 import 'package:pdf_handler/services/template_logic.dart';
 import 'package:pdf_handler/services/user_logic.dart';
@@ -9,8 +10,9 @@ import 'package:pdfx/pdfx.dart';
 import 'package:web_smooth_scroll/web_smooth_scroll.dart';
 
 class SelectTemplate extends StatefulWidget {
+  final String nickname;
   final int uid;
-  const SelectTemplate({super.key, required this.uid});
+  const SelectTemplate({super.key, required this.nickname, required this.uid});
   @override
   State<SelectTemplate> createState() => _SelectTemplateState();
 }
@@ -47,7 +49,6 @@ class _SelectTemplateState extends State<SelectTemplate> {
 
   Future<void> _loadData() async {
     final nocoApp = await UserLogic.getNocoApp(widget.uid);
-    print(nocoApp);
     if (!mounted) return;
     setState(() {
       if (nocoApp == null) {
@@ -117,19 +118,65 @@ class _SelectTemplateState extends State<SelectTemplate> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.arrow_back),
-                      ),
-                      Text(
-                        'Select Template',
-                        style: GoogleFonts.nunito(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w600,
-                          color: const Color.fromARGB(255, 46, 46, 46),
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        width: MediaQuery.of(context).size.width * 0.2,
+                        child: Row(
+                          spacing: 10,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(),
+                            Icon(Icons.account_circle),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.nickname,
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                Text(
+                                  'ID: ${widget.uid.toString()}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(width: 40),
+                      Expanded(
+                        child: Text(
+                          textAlign: TextAlign.center,
+                          'PDF Template Manager',
+                          style: GoogleFonts.nunito(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w600,
+                            color: const Color.fromARGB(255, 46, 46, 46),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.2,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            onPressed:
+                                () => Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LoginPage(),
+                                  ),
+                                ),
+                            icon: Icon(Icons.logout),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox(height: 12),
@@ -181,7 +228,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                           style: GoogleFonts.nunito(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
