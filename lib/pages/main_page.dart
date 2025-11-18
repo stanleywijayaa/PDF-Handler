@@ -39,7 +39,7 @@ class MainPage extends StatelessWidget {
             Expanded(
               child: Text(
                 textAlign: TextAlign.center,
-                'PDF Template Manager',
+                'PDF Manager Portal',
                 style: GoogleFonts.nunito(
                   fontSize: 32,
                   fontWeight: FontWeight.w600,
