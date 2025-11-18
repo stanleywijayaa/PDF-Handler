@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pdf_handler/services/form_logic.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +40,6 @@ class _CreateTemplateState extends State<CreateTemplate> {
   double pdfWidth = 0, pdfHeight = 0;
   bool isLoading = true;
   Template? finishedTemplate;
-  int? _savedPdfId;
   final GlobalKey pdfAreaKey = GlobalKey();
   final List<Field> _placedComponents = [];
   Uint8List? fileBytes;
@@ -359,44 +357,6 @@ class _CreateTemplateState extends State<CreateTemplate> {
     return vm.Vector3(pdfX, pdfY, 0);
   }
 
-  Offset _pdfToOverlayLocal(double pdfX, double pdfY) {
-    final matrix = _transform!.value;
-
-    final RenderBox box =
-        pdfAreaKey.currentContext!.findRenderObject() as RenderBox;
-
-    final containerW = box.size.width;
-    final containerH = box.size.height;
-
-    final imgW = pdfWidth;
-    final imgH = pdfHeight;
-
-    final imgAspect = imgW / imgH;
-    final boxAspect = containerW / containerH;
-
-    double displayW, displayH, offsetX, offsetY;
-
-    if (imgAspect > boxAspect) {
-      displayW = containerW;
-      displayH = displayW / imgAspect;
-      offsetX = 0;
-      offsetY = (containerH - displayH) / 2;
-    } else {
-      displayH = containerH;
-      displayW = displayH * imgAspect;
-      offsetX = (containerW - displayW) / 2;
-      offsetY = 0;
-    }
-
-    // Convert PDF coords → display coords
-    final dispX = offsetX + (pdfX / imgW) * displayW;
-    final dispY = offsetY + (pdfY / imgH) * displayH;
-
-    // Apply InteractiveViewer transform
-    final v = matrix.transform3(vm.Vector3(dispX, dispY, 0));
-    return Offset(v.x, v.y);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -611,9 +571,9 @@ class _CreateTemplateState extends State<CreateTemplate> {
                                                   _activeIndex = index;
                                                 },
                                                 onPanUpdate: (details) {
-                                                  if (_activeIndex != index)
+                                                  if (_activeIndex != index) {
                                                     return;
-
+                                                  }
                                                   final box =
                                                       pdfAreaKey.currentContext!
                                                               .findRenderObject()
