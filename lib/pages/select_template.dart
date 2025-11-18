@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf_handler/model/template.dart';
+import 'package:pdf_handler/pages/create_template.dart';
 import 'package:pdf_handler/pages/search_customer.dart';
 import 'package:pdf_handler/services/template_logic.dart';
 import 'package:pdf_handler/services/user_logic.dart';
@@ -35,8 +36,19 @@ class _SelectTemplateState extends State<SelectTemplate> {
     _loadData();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
+    _futureTemplates = Future.value([]);
+    _allTemplates = [];
+    _displayedTemplates = [];
+  }
+
   Future<void> _loadData() async {
     final nocoApp = await UserLogic.getNocoApp(widget.uid);
+    print(nocoApp);
+    if (!mounted) return;
     setState(() {
       if (nocoApp == null) {
         _futureTemplates = Future.value([]);
@@ -50,6 +62,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
 
   void _searchTemplate(String value) {
     if (value.isEmpty) {
+      if (!mounted) return;
       setState(() {
         _displayedTemplates = _allTemplates;
       });
@@ -64,6 +77,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                   element.title.toLowerCase().contains(value.toLowerCase()),
             )
             .toList();
+    if (!mounted) return;
     setState(() {
       _displayedTemplates = filteredTemplates;
     });
@@ -72,6 +86,18 @@ class _SelectTemplateState extends State<SelectTemplate> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blueAccent,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateTemplate(uid: widget.uid),
+            ),
+          );
+        },
+        child: Icon(Icons.add, color: Colors.white),
+      ),
       backgroundColor: Color.fromARGB(255, 225, 225, 225),
       body: WebSmoothScroll(
         controller: _scrollController,
@@ -107,31 +133,73 @@ class _SelectTemplateState extends State<SelectTemplate> {
                     ],
                   ),
                   SizedBox(height: 12),
-                  TextFormField(
-                    onChanged: (value) => _searchTemplate(value),
-                    style: GoogleFonts.nunito(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color.fromARGB(255, 0, 0, 0),
-                    ),
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.all(Radius.circular(24)),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          onChanged: (value) => _searchTemplate(value),
+                          style: GoogleFonts.nunito(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color.fromARGB(255, 0, 0, 0),
+                          ),
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(24),
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: Color.fromARGB(255, 202, 202, 202),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 15,
+                              horizontal: 24,
+                            ),
+                            hintText: 'Search Template...',
+                            hintStyle: GoogleFonts.nunito(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromARGB(255, 0, 0, 0),
+                            ),
+                          ),
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Color.fromARGB(255, 202, 202, 202),
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 24,
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => CreateTemplate(uid: widget.uid),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        label: Text(
+                          "Create",
+                          style: GoogleFonts.nunito(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.blueAccent, // same as search bar
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 23,
+                          ), // same height
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              24,
+                            ), // same radius
+                          ),
+                        ),
                       ),
-                      hintText: 'Search Template...',
-                      hintStyle: GoogleFonts.nunito(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: const Color.fromARGB(255, 0, 0, 0),
-                      ),
-                    ),
+                    ],
                   ),
                   SizedBox(height: 24),
                   RefreshIndicator(
@@ -184,6 +252,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
                                     200,
                                   ),
                                   onTap: () {
+                                    if (!mounted) return;
                                     setState(() {
                                       selectedTemplate = template;
                                     });
@@ -284,6 +353,7 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
   PdfPageImage? _pageImage;
   TemplateLogic templateLogic = TemplateLogic();
   bool _loading = true;
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -298,9 +368,19 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
         final bytes = await templateLogic.getTemplate(
           templateId: widget.template.id,
         );
+        if (_isDisposed) return;
         if (bytes == null) throw Exception('Failed to get template');
         final doc = await PdfDocument.openData(bytes);
+        if (_isDisposed) {
+          doc.close();
+          return;
+        }
         final page = await doc.getPage(1);
+        if (_isDisposed) {
+          doc.close();
+          page.close();
+          return;
+        }
 
         // Render it to an image
         final pageImage = await page.render(
@@ -309,12 +389,17 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
           quality: 100,
           format: PdfPageImageFormat.png,
         );
+        if (_isDisposed) {
+          doc.close();
+          page.close();
+          return;
+        }
 
         widget.template.preview = pageImage;
 
         await page.close();
 
-        if (!mounted) return;
+        if (!mounted || _isDisposed) return;
 
         setState(() {
           _document = doc;
@@ -322,10 +407,11 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
           _loading = false;
         });
       } catch (e) {
-        if (!mounted) return;
+        if (!mounted || _isDisposed) return;
         setState(() => _loading = false);
       }
     } else {
+      if (!mounted || _isDisposed) return;
       setState(() {
         _pageImage = widget.template.preview;
         _loading = false;
@@ -337,6 +423,7 @@ class _PdfFirstPagePreviewState extends State<PdfFirstPagePreview> {
   void dispose() {
     _document?.close();
     super.dispose();
+    _isDisposed = true;
   }
 
   @override
