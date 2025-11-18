@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/pages/select_template.dart';
 import 'dart:convert';
-//import 'main_page.dart';
+import 'main_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -168,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
           MaterialPageRoute(
             builder:
                 (context) =>
-                    SelectTemplate(nickname: data['nickname'], uid: data['id']),
+                    MainPage(nickname: data['nickname'], uid: data['id']),
           ),
         );
       } else {

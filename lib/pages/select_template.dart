@@ -118,65 +118,19 @@ class _SelectTemplateState extends State<SelectTemplate> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        width: MediaQuery.of(context).size.width * 0.2,
-                        child: Row(
-                          spacing: 10,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            SizedBox(),
-                            Icon(Icons.account_circle),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.nickname,
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                                Text(
-                                  'ID: ${widget.uid.toString()}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(Icons.arrow_back),
+                      ),
+                      Text(
+                        'PDF Template Manager',
+                        style: GoogleFonts.nunito(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
+                          color: const Color.fromARGB(255, 46, 46, 46),
                         ),
                       ),
-                      Expanded(
-                        child: Text(
-                          textAlign: TextAlign.center,
-                          'PDF Template Manager',
-                          style: GoogleFonts.nunito(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w600,
-                            color: const Color.fromARGB(255, 46, 46, 46),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.2,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: IconButton(
-                            onPressed:
-                                () => Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LoginPage(),
-                                  ),
-                                ),
-                            icon: Icon(Icons.logout),
-                          ),
-                        ),
-                      ),
+                      SizedBox(width: 40),
                     ],
                   ),
                   SizedBox(height: 12),

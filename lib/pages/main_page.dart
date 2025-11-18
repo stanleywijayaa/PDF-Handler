@@ -70,10 +70,9 @@ class MainPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _button(context, "Create Template", CreateTemplate(uid: uid)),
               _button(
                 context,
-                "Search Template",
+                "PDF Template Manager",
                 SelectTemplate(nickname: nickname, uid: uid),
               ),
             ],
