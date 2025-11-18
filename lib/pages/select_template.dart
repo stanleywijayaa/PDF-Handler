@@ -315,16 +315,20 @@ class _SelectTemplateState extends State<SelectTemplate> {
                                         return Center(
                                           child: Padding(
                                             padding: const EdgeInsets.all(48),
-                                            child: Container(
-                                              color: const Color.fromARGB(
-                                                255,
-                                                255,
-                                                255,
-                                                255,
-                                              ),
-                                              child: SearchCustomer(
-                                                template: template,
-                                                uid: widget.uid,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(24),
+                                              child: Container(
+                                                color: const Color.fromARGB(
+                                                  255,
+                                                  255,
+                                                  255,
+                                                  255,
+                                                ),
+                                                child: SearchCustomer(
+                                                  template: template,
+                                                  uid: widget.uid,
+                                                ),
                                               ),
                                             ),
                                           ),
