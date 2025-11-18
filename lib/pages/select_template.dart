@@ -115,92 +115,55 @@ class _SelectTemplateState extends State<SelectTemplate> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Stack(
+                    alignment: AlignmentDirectional.centerStart,
                     children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.arrow_back),
-                      ),
-                      Text(
-                        'PDF Template Manager',
-                        style: GoogleFonts.nunito(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w600,
-                          color: const Color.fromARGB(255, 46, 46, 46),
+                      Align(
+                        alignment: AlignmentGeometry.centerLeft,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(Icons.arrow_back),
                         ),
                       ),
-                      SizedBox(width: 40),
+                      Align(
+                        alignment: AlignmentGeometry.center,
+                        child: Text(
+                          'PDF Template Manager',
+                          style: GoogleFonts.nunito(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w600,
+                            color: const Color.fromARGB(255, 46, 46, 46),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          onChanged: (value) => _searchTemplate(value),
-                          style: GoogleFonts.nunito(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color.fromARGB(255, 0, 0, 0),
-                          ),
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(24),
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: Color.fromARGB(255, 202, 202, 202),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 15,
-                              horizontal: 24,
-                            ),
-                            hintText: 'Search Template...',
-                            hintStyle: GoogleFonts.nunito(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: const Color.fromARGB(255, 0, 0, 0),
-                            ),
-                          ),
-                        ),
+                  TextFormField(
+                    onChanged: (value) => _searchTemplate(value),
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                    ),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(24)),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => CreateTemplate(uid: widget.uid),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.add, color: Colors.white),
-                        label: Text(
-                          "Create",
-                          style: GoogleFonts.nunito(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Colors.blueAccent, // same as search bar
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 23,
-                          ), // same height
-
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              24,
-                            ), // same radius
-                          ),
-                        ),
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 202, 202, 202),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 24,
                       ),
-                    ],
+                      hintText: 'Search Template...',
+                      hintStyle: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                      ),
+                    ),
                   ),
                   SizedBox(height: 24),
                   RefreshIndicator(
