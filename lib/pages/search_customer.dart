@@ -24,6 +24,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   final TemplateLogic tempApi = TemplateLogic();
   final TextEditingController _searchController = TextEditingController();
   double leftFraction = 0.5;
+  bool _disposed = false;
 
   List<Map<String, dynamic>> customers = [];
   List<Map<String, dynamic>> filteredCustomers = [];
@@ -47,17 +48,17 @@ class _SearchCustomerState extends State<SearchCustomer> {
         _pdfControllerPinch = PdfControllerPinch(
           document: PdfDocument.openData(_pdfBytes!),
         );
-        if (!mounted) return;
+        if (!mounted || _disposed) return;
         setState(() => isLoadingPdf = false);
       } else {
-        if (!mounted) return;
+        if (!mounted || _disposed) return;
         setState(() {
           errorMessagePDF = "Failed to load PDF";
           isLoadingPdf = false;
         });
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || _disposed) return;
       setState(() {
         errorMessagePDF = e.toString();
         isLoadingPdf = false;
@@ -71,7 +72,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   }
 
   Future<void> _loadCustomers() async {
-    if (!mounted) return;
+    if (!mounted || _disposed) return;
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -82,33 +83,35 @@ class _SearchCustomerState extends State<SearchCustomer> {
         templateId: widget.template?.id ?? 0,
         customerId: widget.uid,
       );
-      if (!mounted) return;
+      if (!mounted || _disposed) return;
       setState(() {
         customers = data;
         filteredCustomers = data;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || _disposed) return;
       setState(() {
         errorMessage = e.toString();
       });
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted || !_disposed) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
   void _searchCustomers(String query) {
     if (query.isEmpty) {
-      if (!mounted) return;
+      if (!mounted || _disposed) return;
       setState(() {
         filteredCustomers = customers;
       });
       return;
     }
     final lowerQuery = query.toLowerCase();
-    if (!mounted) return;
+    if (!mounted || _disposed) return;
     setState(() {
       filteredCustomers =
           customers.where((customer) {
@@ -119,7 +122,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   }
 
   Future<void> _loadFilledPdf(int dataId) async {
-    if (!mounted) return;
+    if (!mounted || _disposed) return;
     setState(() {
       isLoadingPdf = true;
       errorMessagePDF = null;
@@ -140,7 +143,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
       final pdfBytes = pdf['pdf'];
       final truncatedFields = pdf['truncated'];
 
-      if (pdfBytes != null && mounted) {
+      if (pdfBytes != null && mounted && !_disposed) {
         setState(() {
           _pdfControllerPinch?.dispose();
           _pdfControllerPinch = PdfControllerPinch(
@@ -205,14 +208,14 @@ class _SearchCustomerState extends State<SearchCustomer> {
           );
         }
       } else {
-        if (!mounted) return;
+        if (!mounted || _disposed) return;
         setState(() {
           errorMessagePDF = "Failed to generate filled PDF";
           isLoadingPdf = false;
         });
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || _disposed) return;
       setState(() {
         errorMessagePDF = e.toString();
         isLoadingPdf = false;
@@ -224,6 +227,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   void dispose() {
     _pdfControllerPinch?.dispose();
     super.dispose();
+    _disposed = true;
   }
 
   @override
@@ -265,7 +269,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
                   return GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onHorizontalDragUpdate: (details) {
-                      if (!mounted) return;
+                      if (!mounted || _disposed) return;
                       setState(() {
                         leftFraction += details.delta.dx / constraints.maxWidth;
                         if (leftFraction < 0.2) leftFraction = 0.2;
@@ -455,6 +459,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
             try {
               _loadFilledPdf(id);
             } catch (e) {
+              if (!mounted || _disposed) return;
               setState(() {
                 errorMessagePDF = "Error loading PDF: $e";
               });
