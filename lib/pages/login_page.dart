@@ -49,6 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 //  TextBox
                 TextField(
+                  onSubmitted: (_) => login(),
                   style: TextStyle(color: Colors.black),
                   controller: usernameController,
                   decoration: InputDecoration(
@@ -72,6 +73,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 // Password TextBox
                 TextField(
+                  onSubmitted: (_) => login(),
                   style: TextStyle(color: Colors.black),
                   controller: passwordController,
                   obscureText: true,
