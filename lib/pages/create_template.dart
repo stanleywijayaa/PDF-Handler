@@ -11,6 +11,7 @@ import 'package:pdf_handler/model/schema.dart';
 import 'package:pdf_handler/model/template.dart';
 import 'package:pdf_handler/services/data_logic.dart';
 import 'package:pdf_handler/pages/search_customer.dart';
+import 'package:vector_math/vector_math_64.dart' as vm;
 
 class CreateTemplate extends StatefulWidget {
   final String hintText = "Untitled Form";
@@ -45,6 +46,10 @@ class _CreateTemplateState extends State<CreateTemplate> {
   final List<Field> _placedComponents = [];
   Uint8List? fileBytes;
   Uint8List? pageImage;
+
+  int? _activeIndex;
+  vm.Vector3? _lastPointerPdfPos;
+  vm.Vector3? _lastResizePdfPos;
 
   @override
   void initState() {
@@ -105,14 +110,6 @@ class _CreateTemplateState extends State<CreateTemplate> {
 
   void _addDraggableComponent() {
     if (selectedField == null || selectedComponent.isEmpty) return;
-
-    // // If the user selected a Schema (field)
-    // String fieldKey = '';
-    // if (selectedField is Field) {
-    //   fieldKey = (_selectedData as Schema).title;
-    // } else {
-    //   fieldKey = 'Unnamed Field';
-    // }
 
     setState(() {
       if (!mounted) return;
@@ -319,6 +316,87 @@ class _CreateTemplateState extends State<CreateTemplate> {
     }
   }
 
+  vm.Vector3 _overlayLocalToPdf(Offset overlayLocal) {
+    final matrix = _transform!.value;
+    final inverse = vm.Matrix4.copy(matrix)..invert();
+
+    // Step 1 — untransform the InteractiveViewer
+    final transformed = inverse.transform3(
+      vm.Vector3(overlayLocal.dx, overlayLocal.dy, 0),
+    );
+
+    // Step 2 — compute how the PDF image is fitted in the container
+    final RenderBox box =
+        pdfAreaKey.currentContext!.findRenderObject() as RenderBox;
+
+    final containerW = box.size.width;
+    final containerH = box.size.height;
+
+    final imgW = pdfWidth;
+    final imgH = pdfHeight;
+
+    final imgAspect = imgW / imgH;
+    final boxAspect = containerW / containerH;
+
+    double displayW, displayH, offsetX, offsetY;
+
+    if (imgAspect > boxAspect) {
+      displayW = containerW;
+      displayH = displayW / imgAspect;
+      offsetX = 0;
+      offsetY = (containerH - displayH) / 2;
+    } else {
+      displayH = containerH;
+      displayW = displayH * imgAspect;
+      offsetX = (containerW - displayW) / 2;
+      offsetY = 0;
+    }
+
+    // Step 3 — remove letterboxing
+    final pdfX = (transformed.x - offsetX) / displayW * imgW;
+    final pdfY = (transformed.y - offsetY) / displayH * imgH;
+
+    return vm.Vector3(pdfX, pdfY, 0);
+  }
+
+  Offset _pdfToOverlayLocal(double pdfX, double pdfY) {
+    final matrix = _transform!.value;
+
+    final RenderBox box =
+        pdfAreaKey.currentContext!.findRenderObject() as RenderBox;
+
+    final containerW = box.size.width;
+    final containerH = box.size.height;
+
+    final imgW = pdfWidth;
+    final imgH = pdfHeight;
+
+    final imgAspect = imgW / imgH;
+    final boxAspect = containerW / containerH;
+
+    double displayW, displayH, offsetX, offsetY;
+
+    if (imgAspect > boxAspect) {
+      displayW = containerW;
+      displayH = displayW / imgAspect;
+      offsetX = 0;
+      offsetY = (containerH - displayH) / 2;
+    } else {
+      displayH = containerH;
+      displayW = displayH * imgAspect;
+      offsetX = (containerW - displayW) / 2;
+      offsetY = 0;
+    }
+
+    // Convert PDF coords → display coords
+    final dispX = offsetX + (pdfX / imgW) * displayW;
+    final dispY = offsetY + (pdfY / imgH) * displayH;
+
+    // Apply InteractiveViewer transform
+    final v = matrix.transform3(vm.Vector3(dispX, dispY, 0));
+    return Offset(v.x, v.y);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -476,68 +554,125 @@ class _CreateTemplateState extends State<CreateTemplate> {
                     )
                     : Expanded(
                       child: Center(
-                        child: InteractiveViewer(
-                          transformationController: _transform,
-                          constrained: false,
-                          child: Stack(
-                            alignment: AlignmentGeometry.center,
-                            key: pdfAreaKey,
-                            children: [
-                              if (pageImage != null)
-                                Center(child: Image.memory(pageImage!)),
-                              //Draggable overlay
-                              ..._placedComponents
-                                  .asMap()
-                                  .entries
-                                  .where(
-                                    (entry) =>
-                                        entry.value.page == pdfPageNum - 1,
-                                  )
-                                  .map((entry) {
-                                    final component = entry.value;
-                                    final matrix = _transform!.value;
-                                    final scaleX = matrix[0];
-                                    final scaleY = matrix[5];
-                                    final translateX = matrix[12];
-                                    final translateY = matrix[13];
-                                    final index = entry.key;
-                                    return Positioned(
-                                      left: component.x * scaleX + translateX,
-                                      top: component.y * scaleY + translateY,
-                                      child: GestureDetector(
-                                        child: _buildDraggableBox(
-                                          component,
-                                          index,
-                                        ),
-                                        onPanUpdate: (details) {
-                                          final updatedX =
-                                              (component.x +
-                                                  details.delta.dx / scaleX);
-                                          final updatedY =
-                                              (component.y +
-                                                  details.delta.dy / scaleY);
-
-                                          setState(() {
-                                            final updated = component.copyWith(
-                                              x: updatedX,
-                                              y: updatedY,
-                                            );
-                                            _placedComponents[index] = updated;
-                                          });
-                                        },
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return Stack(
+                              key: pdfAreaKey,
+                              children: [
+                                // Interactive viewer controls zoom & pan
+                                InteractiveViewer(
+                                  transformationController: _transform,
+                                  minScale: 0.5,
+                                  maxScale: 5,
+                                  constrained: false,
+                                  child: Stack(
+                                    children: [
+                                      // PDF IMAGE (base layer)
+                                      Image.memory(
+                                        pageImage!,
+                                        width: pdfWidth,
+                                        height: pdfHeight,
+                                        fit: BoxFit.contain,
                                       ),
-                                    );
-                                  }),
-                              if (isLoading)
-                                Container(
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      color: Colors.blue,
-                                    ),
+
+                                      // FIELDS INSIDE THE SAME TRANSFORM SPACE
+                                      ..._placedComponents
+                                          .asMap()
+                                          .entries
+                                          .where(
+                                            (e) =>
+                                                e.value.page == pdfPageNum - 1,
+                                          )
+                                          .map((entry) {
+                                            final comp = entry.value;
+                                            final index = entry.key;
+
+                                            return Positioned(
+                                              left: comp.x,
+                                              top: comp.y,
+                                              width: comp.width,
+                                              height: comp.height,
+                                              child: GestureDetector(
+                                                behavior:
+                                                    HitTestBehavior.translucent,
+                                                onPanStart: (details) {
+                                                  final box =
+                                                      pdfAreaKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox;
+
+                                                  // convert global → PDF coordinates
+                                                  final local = box
+                                                      .globalToLocal(
+                                                        details.globalPosition,
+                                                      );
+                                                  _lastPointerPdfPos =
+                                                      _overlayLocalToPdf(local);
+                                                  _activeIndex = index;
+                                                },
+                                                onPanUpdate: (details) {
+                                                  if (_activeIndex != index)
+                                                    return;
+
+                                                  final box =
+                                                      pdfAreaKey.currentContext!
+                                                              .findRenderObject()
+                                                          as RenderBox;
+
+                                                  final local = box
+                                                      .globalToLocal(
+                                                        details.globalPosition,
+                                                      );
+                                                  final pdfPos =
+                                                      _overlayLocalToPdf(local);
+
+                                                  if (_lastPointerPdfPos ==
+                                                      null) {
+                                                    _lastPointerPdfPos = pdfPos;
+                                                    return;
+                                                  }
+
+                                                  final delta =
+                                                      pdfPos -
+                                                      _lastPointerPdfPos!;
+
+                                                  setState(() {
+                                                    final comp =
+                                                        _placedComponents[index];
+                                                    _placedComponents[index] =
+                                                        comp.copyWith(
+                                                          x: comp.x + delta.x,
+                                                          y: comp.y + delta.y,
+                                                        );
+                                                  });
+                                                  _lastPointerPdfPos = pdfPos;
+                                                },
+                                                onPanEnd: (_) {
+                                                  _activeIndex = null;
+                                                  _lastPointerPdfPos = null;
+                                                },
+                                                child: _buildDraggableBox(
+                                                  comp,
+                                                  index,
+                                                ),
+                                              ),
+                                            );
+                                          }),
+                                    ],
                                   ),
                                 ),
-                            ],
-                          ),
+
+                                if (isLoading)
+                                  Positioned.fill(
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -992,17 +1127,50 @@ class _CreateTemplateState extends State<CreateTemplate> {
           right: 0,
           bottom: 0,
           child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onPanStart: (details) {
+              final overlayBox =
+                  pdfAreaKey.currentContext!.findRenderObject() as RenderBox;
+              final overlayLocal = overlayBox.globalToLocal(
+                details.globalPosition,
+              );
+              _lastResizePdfPos = _overlayLocalToPdf(overlayLocal);
+              _activeIndex = index;
+            },
             onPanUpdate: (details) {
-              final matrix = _transform!.value;
+              if (_activeIndex != index) return;
+              final overlayBox =
+                  pdfAreaKey.currentContext!.findRenderObject() as RenderBox;
+              final overlayLocal = overlayBox.globalToLocal(
+                details.globalPosition,
+              );
+              final currentPdfPos = _overlayLocalToPdf(overlayLocal);
 
-              final scaleX = matrix[0];
-              final scaleY = matrix[5];
+              if (_lastResizePdfPos == null) {
+                _lastResizePdfPos = currentPdfPos;
+                return;
+              }
+
+              final delta = currentPdfPos - _lastResizePdfPos!;
+
               setState(() {
-                _placedComponents[index] = field.copyWith(
-                  width: field.width + details.delta.dx / scaleX,
-                  height: field.height + details.delta.dy / scaleY,
+                final comp = _placedComponents[index];
+                final newWidth = (comp.width + delta.x).clamp(10.0, pdfWidth);
+                final newHeight = (comp.height + delta.y).clamp(
+                  10.0,
+                  pdfHeight,
+                );
+                _placedComponents[index] = comp.copyWith(
+                  width: newWidth,
+                  height: newHeight,
                 );
               });
+
+              _lastResizePdfPos = currentPdfPos;
+            },
+            onPanEnd: (_) {
+              _lastResizePdfPos = null;
+              _activeIndex = null;
             },
             child: Container(
               width: 4,

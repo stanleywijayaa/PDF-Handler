@@ -103,20 +103,11 @@ class FormLogic {
 
   // convert the screen coordinate to  pdf coordinate
   List<Map<String, dynamic>> convertFieldsToPdfCoords() {
-    final RenderBox? box =
-        pdfAreaKey.currentContext?.findRenderObject() as RenderBox?;
-
-    if (box == null) throw Exception("PDF area not found");
-
-    final Size widgetSize = box.size;
-    final double scaleX = pdfWidth / widgetSize.width;
-    final double scaleY = pdfHeight / widgetSize.height;
-
     return placedComponents.map((field) {
-      // field should contain label, dataField, and position (x, y)
-      final double pdfX = field.x * scaleX;
-      final double pdfY =
-          (widgetSize.height - field.y + (field.height / 2)) * scaleY;
+      final double pdfX = field.x;
+
+      // Flip Y-axis (PDF is bottom-left origin)
+      final double pdfY = pdfHeight - field.y - 10;
 
       return {
         "field": {
