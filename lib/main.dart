@@ -1,14 +1,11 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf_handler/pages/login_page.dart';
 import 'package:pdf_handler/pages/main_page.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
   //Ensures Flutter’s bindings are initialized before running async code
   WidgetsFlutterBinding.ensureInitialized();
-  //Load the .env file
-  await dotenv.load(fileName: '.env');
   runApp(const PDFHandler());
 }
 

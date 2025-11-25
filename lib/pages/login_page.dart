@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/pages/select_template.dart';
 import 'dart:convert';
 import 'main_page.dart';
+
+const NODE_URL = 'http://localhost:3000';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -147,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('${dotenv.env['NODE_URL']}/login'),
+        Uri.parse('$NODE_URL/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'account': username, 'password': password}),
       );

@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/model/field.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pdf_handler/services/user_logic.dart';
+
+const NODE_URL = 'http://localhost:3000';
 
 class FormLogic {
   final String templateName;
@@ -45,7 +46,7 @@ class FormLogic {
       //Send to backend
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse("http://localhost:3000/createpdf"),
+        Uri.parse("$NODE_URL/createpdf"),
       );
 
       request.fields['form'] = jsonEncode(form);

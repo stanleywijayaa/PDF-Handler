@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:pdf_handler/model/table.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-final nodeURL = dotenv.env['NODE_URL'];
+const nodeURL = 'http://localhost:3000';
 
 class DataLogic {
   Future<List<Map<String, dynamic>>> getCustomers({
@@ -62,10 +61,12 @@ class DataLogic {
     );
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
-    final truncatedFields = jsonDecode(response.headers['truncated-fields'] ?? "[]");
+    final truncatedFields = jsonDecode(
+      response.headers['truncated-fields'] ?? "[]",
+    );
     if (response.statusCode == 200) {
       final data = response.bodyBytes;
-      return { 'pdf': data, 'truncated': truncatedFields };
+      return {'pdf': data, 'truncated': truncatedFields};
     } else {
       //print('Error ${response.statusCode}: ${response.body}');
       throw Exception("Failed to fill PDF data");

@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-final nodeURL = 'http://localhost:3000';
-final nocoURL = 'https://connect.appnicorn.com';
+const nodeURL = 'http://localhost:3000';
+const nocoURL = 'https://connect.appnicorn.com';
 
 class UserLogic {
   static Future<String?> getNocoApp(int uid) async {
