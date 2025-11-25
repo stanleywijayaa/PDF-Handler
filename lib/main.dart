@@ -1,6 +1,5 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf_handler/pages/login_page.dart';
-import 'package:pdf_handler/pages/main_page.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
@@ -61,7 +60,7 @@ class PDFHandler extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFE1E1E1),
         useMaterial3: true,
       ),
-      home: const LoginPage(), // ⚠️will change this to login page later⚠️.
+      home: const LoginPage(),
     );
   }
 }

@@ -26,7 +26,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
 
   @override
   void initState() {
-    // initialize scroll controllers
+    //initialize scroll controllers
     super.initState();
     _scrollController = ScrollController();
     _loadData();
@@ -200,7 +200,6 @@ class _SelectTemplateState extends State<SelectTemplate> {
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: crossAxisCount,
-                                    //crossAxisSpacing: 16,
                                     mainAxisSpacing: 16,
                                     childAspectRatio: 0.8,
                                   ),

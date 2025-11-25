@@ -168,7 +168,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
                   width: double.minPositive,
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(
-                      maxHeight: 300, // limit height for long lists
+                      maxHeight: 300,
                     ),
                     child: ListView.separated(
                       shrinkWrap: true,

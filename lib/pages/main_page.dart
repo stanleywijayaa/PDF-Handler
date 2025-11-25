@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf_handler/pages/login_page.dart';
 import 'package:pdf_handler/pages/select_template.dart';
-import 'package:pdf_handler/pages/create_template.dart';
 
 class MainPage extends StatelessWidget {
   final String nickname;

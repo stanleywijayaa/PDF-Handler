@@ -76,9 +76,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
       allowedExtensions: ['pdf'],
     );
     if (result != null && result.files.isNotEmpty) {
-      fileBytes = Uint8List.fromList(
-        result.files.first.bytes!.toList(),
-      ); // file content
+      fileBytes = Uint8List.fromList(result.files.first.bytes!.toList());
       String fileName = result.files.first.name.replaceAll(
         RegExp(r'\.[^\/.]+$'),
         '',
@@ -130,11 +128,9 @@ class _CreateTemplateState extends State<CreateTemplate> {
     setState(() {
       if (!mounted) return;
       _selectedData = item;
-      //print(item.toString());
 
       if (item is TableModel) {
         selectedTable = item;
-        // Update the future to fetch the schema of this table
         _futureDataCached = selectedTable!
             .fetchSchema(uid: widget.uid)
             .then((_) => selectedTable!.schema);
@@ -168,11 +164,10 @@ class _CreateTemplateState extends State<CreateTemplate> {
       },
     );
 
-    // ✅ Build your export logic here
     final formLogic = FormLogic(
       templateName: name.trim(),
-      tableName: selectedTable!.tableName, // whatever table user picked
-      placedComponents: _placedComponents, // your draggable items
+      tableName: selectedTable!.tableName,
+      placedComponents: _placedComponents,
       pdfAreaKey: pdfAreaKey,
       pdfWidth: pdfWidth,
       pdfHeight: pdfHeight,
@@ -194,7 +189,7 @@ class _CreateTemplateState extends State<CreateTemplate> {
         );
         if (finishedTemplate != null) _saved = true;
       });
-    } // close dialog
+    }
     if (parentContext.mounted) {
       Navigator.of(parentContext, rootNavigator: true).pop();
       Navigator.of(parentContext).pushReplacement(
@@ -560,8 +555,6 @@ class _CreateTemplateState extends State<CreateTemplate> {
                                                       pdfAreaKey.currentContext!
                                                               .findRenderObject()
                                                           as RenderBox;
-
-                                                  // convert global → PDF coordinates
                                                   final local = box
                                                       .globalToLocal(
                                                         details.globalPosition,

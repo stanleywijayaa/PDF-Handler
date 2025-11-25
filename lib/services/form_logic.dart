@@ -75,8 +75,9 @@ class FormLogic {
         if (id == null ||
             title == null ||
             tableName == null ||
-            fileSize == null)
+            fileSize == null) {
           return null;
+        }
         return {
           'id': int.parse(id),
           'title': title,

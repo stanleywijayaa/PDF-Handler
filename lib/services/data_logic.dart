@@ -68,7 +68,6 @@ class DataLogic {
       final data = response.bodyBytes;
       return {'pdf': data, 'truncated': truncatedFields};
     } else {
-      //print('Error ${response.statusCode}: ${response.body}');
       throw Exception("Failed to fill PDF data");
     }
   }
